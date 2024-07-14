@@ -22,17 +22,47 @@ class CuController extends Controller
     }
     public function show($cu_name)
     {
-        dd($cu_name);
         $cu = CU::where('cu_name', $cu_name)->first();
+        if ($cu) {
+            $regisseurs = $cu->regisseur;
 
-        if (!$cu) {
-            abort(404);
+        } else {
+            dd('CU not found');
         }
 
 
         // $regisseurs = $cu->regisseur;
         // dd($regisseurs);
-        // return view('cu.show', ['nom' => $cu, 'regisseurs' => $regisseurs]);
+        return view('cu.show',
+            ['nomCom' => $cu, 'regisseurs' => $regisseurs]);
     }
+    public function tableau($cu_name, $name)
+    {
+        $months = [
+            'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+            'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+        ];
 
+        return view('cu.tableau', [
+            'months' => $months,
+            'cu_name' => $cu_name,
+            'name' => $name
+        ]);
+    }
+    public function mois($cu_name, $name, $month)
+    {
+        // Example: Fetching months dynamically
+        $months = [
+            'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+            'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+        ];
+
+
+        return view('cu.mois', [
+            'months' => $months,
+            'cu_name' => $cu_name,
+            'name' => $name,
+            'month' => $month,
+        ]);
+    }
 }

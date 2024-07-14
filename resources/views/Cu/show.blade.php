@@ -1,24 +1,22 @@
 <x-layout>
     <x-slot name="headings">
-        La Commune Urbaine :
+        La Commune Urbaine : {{$nomCom->cu_name}}
     </x-slot>
 
-    <h1></h1>
-
-    @if ($nom)
-        Mister: <strong>{{ $nom->cu_name }}</strong>
-    @else
-        <p>No user found with the given ID.</p>
-    @endif
-
-    @if ($regisseurs->isNotEmpty())
-        <h2>Regisseurs:</h2>
-        <ul>
-            @foreach ($regisseurs as $regisseur)
-                <li>{{ $regisseur->name }}</li> <!-- Adjust the field name to the actual column name in your Regisseur model -->
-            @endforeach
+    <div class="dropdown">
+        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Selectionner la commune urbaine
+        </button>
+        <ul class="dropdown-menu dropdown-menu-dark">
+            @if ($regisseurs->isNotEmpty())
+                @foreach($regisseurs as $regisseur)
+                    <li><a class="dropdown-item" href="/Cu/{{ $nomCom->cu_name }}/{{$regisseur->name}}">{{$regisseur->name}}</a></li>
+                @endforeach
+            @else
+                <p>No regisseurs found for this CU.</p>
+            @endif
         </ul>
-    @else
-        <p>No regisseurs found for this CU.</p>
-    @endif
+    </div>
+
+
 </x-layout>

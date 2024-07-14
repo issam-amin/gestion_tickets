@@ -10,6 +10,8 @@ Route::get('/', function () {
 Route::controller(CuController::class)->group(function (){
     Route::get('/Cu','index');
     Route::get('/Cu/{cu_name}', 'show');
+    Route::get('/Cu/{cu_name}/{name}', 'tableau');
+    Route::get('/Cu/{cu_name}/{name}/{month}', 'mois');
 });
 
 Route::view('/CR','CR');
