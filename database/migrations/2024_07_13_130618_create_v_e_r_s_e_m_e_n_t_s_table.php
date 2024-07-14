@@ -20,6 +20,7 @@ return new class extends Migration
             $table->double(DB::raw('`5`'))->nullable();
             $table->double(DB::raw('`2`'))->nullable();
             $table->double(DB::raw('`50`'))->nullable();
+            $table->string('mois');
             $table->double('Somme')->nullable();
             $table->foreignIdFor(Regisseur::class)->nullable()->constrained()->cascadeOnDelete();
             $table->timestamps();

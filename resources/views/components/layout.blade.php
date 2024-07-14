@@ -5,6 +5,7 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <title>Website</title>
@@ -25,8 +26,8 @@
                         <div class="ml-10 flex items-baseline space-x-4">
                             <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
                             <x-nav-link  href="/" :active="request()->is('/')">Home</x-nav-link>
-                            <x-nav-link  href="/names" :active="request()->is('contact')">Names</x-nav-link>
-                            <x-nav-link  href="/about" :active="request()->is('about')">About</x-nav-link>
+                            <x-nav-link  href="/Cu" :active="request()->is('Cu')">CU</x-nav-link>
+                            <x-nav-link  href="/CR" :active="request()->is('CR')">CR</x-nav-link>
                             <x-nav-link  href="/info" :active="request()->is('info')" >Info</x-nav-link>
 
                         </div>

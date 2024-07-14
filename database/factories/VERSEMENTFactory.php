@@ -23,6 +23,7 @@ class VERSEMENTFactory extends Factory
             '2' => $this->faker->randomDigit(),
             '5' => $this->faker->randomDigit(),
             '50' => $this->faker->randomDigit(),
+            'mois'=>$this->faker->month(),
             'somme' => $this->faker->randomDigit(),
             'regisseur_id' =>regisseur::factory(),
         ];
