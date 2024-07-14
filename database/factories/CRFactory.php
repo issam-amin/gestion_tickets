@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\CR;
+use App\Models\CU;
 use App\Models\regisseur;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -19,7 +21,7 @@ class CRFactory extends Factory
     public function definition(): array
     {
         return [
-            'regisseur_id' => regisseur::factory(),
+
             'user_id' =>User::factory(),
             'cr_name' => $this->faker->name(),
         ];

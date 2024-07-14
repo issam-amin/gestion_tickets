@@ -9,6 +9,7 @@ Route::get('/', function () {
 });
 Route::controller(CuController::class)->group(function (){
     Route::get('/Cu','index');
-    Route::get('/Cu/{cu_name}', 'show');});
+    Route::get('/Cu/{cu_name}', 'show');
+});
 
 Route::view('/CR','CR');

@@ -10,6 +10,7 @@ class regisseur extends Model
 {
     use HasFactory;
     protected $guarded = [];
+
     public function cu(): BelongsTo
     {
         return $this->belongsTo(CU::class);

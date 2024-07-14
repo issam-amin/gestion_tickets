@@ -22,13 +22,14 @@ class CuController extends Controller
     }
     public function show($cu_name)
     {
+        dd($cu_name);
         $cu = CU::where('cu_name', $cu_name)->first();
 
         if (!$cu) {
             abort(404);
         }
 
-        dd($cu->name_cu); // Debug output
+
         // $regisseurs = $cu->regisseur;
         // dd($regisseurs);
         // return view('cu.show', ['nom' => $cu, 'regisseurs' => $regisseurs]);

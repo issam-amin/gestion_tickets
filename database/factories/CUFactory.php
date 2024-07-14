@@ -19,7 +19,7 @@ class CUFactory extends Factory
     public function definition(): array
     {
         return [
-            'regisseur_id' => regisseur::factory(),
+
             'user_id' =>User::factory(),
             'cu_name' => $this->faker->name(),
         ];

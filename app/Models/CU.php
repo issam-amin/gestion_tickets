@@ -10,6 +10,7 @@ class CU extends Model
 {
     use HasFactory;
     protected $guarded = [];
+    protected $table = 'c_u_s';
     public function regisseur(): HasMany
     {
         return $this->hasMany(regisseur::class);

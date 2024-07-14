@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\CR;
+use App\Models\CU;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,6 +19,8 @@ class RegisseurFactory extends Factory
     public function definition(): array
     {
         return [
+            'cu_id' => CU::factory(),
+            'cr_id' => CR::factory(),
             'name' => fake()->name(),
         ];
     }
