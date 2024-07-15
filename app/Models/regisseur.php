@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @method static find($id)
+ */
 class regisseur extends Model
 {
     use HasFactory;
@@ -13,7 +16,7 @@ class regisseur extends Model
 
     public function cu(): BelongsTo
     {
-        return $this->belongsTo(CU::class);
+        return $this->belongsTo(CU::class, 'c_u_id', 'id');
     }
     public function cr(): BelongsTo
     {

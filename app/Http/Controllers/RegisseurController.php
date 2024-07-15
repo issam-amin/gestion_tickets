@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\regisseur;
 use Illuminate\Http\Request;
 
 class RegisseurController extends Controller
@@ -9,9 +10,21 @@ class RegisseurController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index($id)
     {
-        //
+        $regisseur=regisseur::find($id);
+        $cuName= $regisseur->cu()->first()->cu_name;
+       // dd( $regisseur->cu()->first()->cu_name);
+        $months = [
+            'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+            'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+        ];
+
+        return view('cu.tableau', [
+            'months' => $months,
+            'name' => $regisseur->name,
+            'cu_name' => $cuName,
+        ]);
     }
 
     /**

@@ -12,7 +12,7 @@
         <ul class="dropdown-menu dropdown-menu-dark">
             @if ($regisseurs->isNotEmpty())
                 @foreach($regisseurs as $regisseur)
-                    <li><a class="dropdown-item" href="/Cu/{{ $nomCom->cu_name }}/{{$regisseur->name}}">{{$regisseur->name}}</a></li>
+                    <li><a class="dropdown-item" href="/Regisseur/{{$regisseur->id}}">{{$regisseur->name}}</a></li>
                 @endforeach
             @else
                 <p>No regisseurs found for this CU.</p>

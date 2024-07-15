@@ -49,20 +49,5 @@ class CuController extends Controller
             'name' => $name
         ]);
     }
-    public function mois($cu_name, $name, $month)
-    {
-        // Example: Fetching months dynamically
-        $months = [
-            'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
-            'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
-        ];
 
-
-        return view('cu.mois', [
-            'months' => $months,
-            'cu_name' => $cu_name,
-            'name' => $name,
-            'month' => $month,
-        ]);
-    }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CuController;
+use App\Http\Controllers\RegisseurController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -10,8 +11,12 @@ Route::get('/', function () {
 Route::controller(CuController::class)->group(function (){
     Route::get('/Cu','index');
     Route::get('/Cu/{cu_name}', 'show');
-    Route::get('/Cu/{cu_name}/{name}', 'tableau');
-    Route::get('/Cu/{cu_name}/{name}/{month}', 'mois');
+
+
 });
-Route::resource('/makerg',\App\Http\Controllers\RegisseurController::class);
+Route::controller(RegisseurController::class)->group(function (){
+
+    Route::get('/Regisseur/{id}', 'index');
+
+});
 Route::view('/CR','CR');
