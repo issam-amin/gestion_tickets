@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CU;
+use Carbon\Carbon;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
@@ -22,6 +23,8 @@ class CuController extends Controller
     }
     public function show($cu_name)
     {
+        $cu=[];$regisseurs=[];$typRegi=[];$annees=[];
+
         $cu = CU::where('cu_name', $cu_name)->first();
         if ($cu) {
             $regisseurs = $cu->regisseur;
@@ -29,12 +32,20 @@ class CuController extends Controller
         } else {
             dd('CU not found');
         }
-
+        $typRegi=['approvisionnement','versement','chez_tp'];
+        for ($i=2010;$i<Carbon::now()->year+1;$i++){
+            $annees[]=$i;
+        }
 
         // $regisseurs = $cu->regisseur;
         // dd($regisseurs);
         return view('cu.show',
-            ['nomCom' => $cu, 'regisseurs' => $regisseurs]);
+            [
+                'nomCom' => $cu,
+                'regisseurs' => $regisseurs,
+                'typeRegisseur' => $typRegi,
+                'annees' => $annees
+            ]);
     }
     public function tableau($cu_name, $name)
     {

@@ -16,7 +16,7 @@ Route::controller(CuController::class)->group(function (){
 });
 Route::controller(RegisseurController::class)->group(function (){
 
-    Route::get('/Regisseur/{id}', 'index');
+    Route::post('/Regisseur', 'index');
 
 });
 Route::view('/CR','CR');

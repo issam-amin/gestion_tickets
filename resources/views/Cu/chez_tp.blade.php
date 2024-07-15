@@ -1,18 +1,19 @@
 <x-layout>
     <x-slot name="headings">
-        Tableau de Commune Urbaine : {{$cu_name}}<br>
-      <p class="text-center font-extrabold text-blue-900">Regisseur de :  "{{$name}}"</p>
 
+         <p>Tableau de Commune Urbaine : {{$cu_name}}</p>
+         <p class="text-center font-extrabold text-blue-900">Regisseur de :  "{{$name}}"</p>
 
     </x-slot>
+    <form method="POST" action="">
 
     <table class="table table-striped table-hover ">
         <thead>
 
         <tr>
-            <th scope="row" colspan="6" class="text-center">APPROVISIONNEMENT REGISSEURS</th>
+            <th scope="row" colspan="6" class="text-center">{{$typeRegisseur}}</th>
         </tr>
-        <tr>
+        <tr class="text-center">
             <th scope="col">Mois</th>
             <th scope="col">0.5</th>
             <th scope="col">1</th>
@@ -24,18 +25,22 @@
         <tbody>
 
         <tr>
-            <th scope="row">Reste</th>
+            <th scope="row" class="text-center">Reste</th>
             @for($i=0;$i<5;$i++)
-                <td class="px-6 py-4 border-b border-gray-300">
+                <td class="px-6 py-4 border-b border-gray-300 ">
                 </td>
             @endfor
         </tr>
             @foreach($months as $month)
         <tr>
-            <th scope="row">{{$month}}</th>
+            <th scope="row" class="text-center mt-10"     >{{$month}}</th>
             @for($i=0;$i<5;$i++)
                 <td class="px-6 py-4 border-b border-gray-300">
+{{--
                     <input id="number" type="number" placeholder="number" min="0" class="w-full px-3 py-2 border border-gray-900 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+--}}
+                    <input class="block w-75 px-6 py-3 text-black bg-white border border-gray-200 rounded-full appearance-none placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm max-w-[220px]" placeholder="number" id="number" type="number">
+
                 </td>
             @endfor
 
@@ -50,20 +55,6 @@
             Update
         </button>
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', (event) => {
-            const menuButton = document.getElementById('menu-button');
-            const dropdownMenu = document.getElementById('dropdown-menu');
+    </form>
 
-            menuButton.addEventListener('click', () => {
-                dropdownMenu.classList.toggle('hidden');
-            });
-
-            window.addEventListener('click', (e) => {
-                if (!menuButton.contains(e.target) && !dropdownMenu.contains(e.target)) {
-                    dropdownMenu.classList.add('hidden');
-                }
-            });
-        });
-    </script>
 </x-layout>
