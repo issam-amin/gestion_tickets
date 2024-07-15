@@ -1,6 +1,8 @@
 <x-layout>
     <x-slot name="headings">
-        La Commune Urbaine : {{$nomCom->cu_name}}
+        <div class="flex ">
+        La Commune Urbaine : <p class="text-blue-500 ">{{$nomCom->cu_name}}</p>
+        </div>
     </x-slot>
 
     <div class="dropdown">

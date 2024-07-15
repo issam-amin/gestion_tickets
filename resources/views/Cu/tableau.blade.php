@@ -1,8 +1,9 @@
 <x-layout>
     <x-slot name="headings">
-        Tableau de Commune Urbaine Par
+        Tableau de Commune Urbaine :<br>
+      <p class="text-center font-extrabold text-blue-900">Regisseur de :  "{{$name}}"</p>
 
-    <div class="relative inline-block text-left ">
+    {{--<div class="relative inline-block text-left ">
         <div>
             <x-button   id="menu-button" type="button" class="font-bold text-black-900 ">
                 Mois
@@ -19,9 +20,59 @@
 
             </div>
         </div>
-    </div>
+    </div>--}}
     </x-slot>
+   {{-- @php(
+        $months = [
+        'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+        'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+        ]
+    )@endphp--}}
 
+    <table class="table table-striped table-hover ">
+        <thead>
+
+        <tr>
+            <th scope="row" colspan="6" class="text-center">APPROVISIONNEMENT REGISSEURS</th>
+        </tr>
+        <tr>
+            <th scope="col">Mois</th>
+            <th scope="col">0.5</th>
+            <th scope="col">1</th>
+            <th scope="col">2</th>
+            <th scope="col">5</th>
+            <th scope="col">50</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        <tr>
+            <th scope="row">Reste</th>
+            @for($i=0;$i<5;$i++)
+                <td class="px-6 py-4 border-b border-gray-300">
+                </td>
+            @endfor
+        </tr>
+            @foreach($months as $month)
+        <tr>
+            <th scope="row">{{$month}}</th>
+            @for($i=0;$i<5;$i++)
+                <td class="px-6 py-4 border-b border-gray-300">
+                    <input id="number" type="number" placeholder="number" min="0" class="w-full px-3 py-2 border border-gray-900 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+                </td>
+            @endfor
+
+        </tr>
+            @endforeach
+
+        </tbody>
+    </table>
+    <div>
+        <button type="submit" class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white
+                        shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+            Update
+        </button>
+    </div>
     <script>
         document.addEventListener('DOMContentLoaded', (event) => {
             const menuButton = document.getElementById('menu-button');

@@ -13,5 +13,5 @@ Route::controller(CuController::class)->group(function (){
     Route::get('/Cu/{cu_name}/{name}', 'tableau');
     Route::get('/Cu/{cu_name}/{name}/{month}', 'mois');
 });
-
+Route::resource('/makerg',\App\Http\Controllers\RegisseurController::class);
 Route::view('/CR','CR');
