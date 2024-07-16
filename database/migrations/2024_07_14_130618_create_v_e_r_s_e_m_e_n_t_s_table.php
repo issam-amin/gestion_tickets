@@ -25,6 +25,7 @@ return new class extends Migration
             $table->double('Somme')->nullable();
             $table->foreignIdFor(Regisseur::class)->nullable()->constrained()->cascadeOnDelete();
             $table->timestamps();
+
         });
 
     }

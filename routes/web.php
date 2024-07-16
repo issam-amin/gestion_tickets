@@ -17,7 +17,9 @@ Route::controller(CuController::class)->group(function (){
 Route::controller(RegisseurController::class)->group(function (){
 
     Route::post('/Regisseur', 'index');
-
+    Route::post('/approvisionnement/{annee}/{IDRegisseur}',  'store');
 
 });
+
+
 Route::view('/CR','CR');

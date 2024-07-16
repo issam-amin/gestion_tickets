@@ -7,7 +7,7 @@
 
     </x-slot>
     <form method="POST" action="">
-
+        @csrf
     <table class="table table-striped table-hover ">
         <thead>
 
@@ -16,11 +16,9 @@
         </tr>
         <tr class="text-center">
             <th scope="col">Mois</th>
-            <th scope="col">0.5</th>
-            <th scope="col">1</th>
-            <th scope="col">2</th>
-            <th scope="col">5</th>
-            <th scope="col">50</th>
+            @foreach($values as $value)
+                <th scope="col">{{$value}}</th>
+            @endforeach
         </tr>
         </thead>
         <tbody>
@@ -56,6 +54,7 @@
                          focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
             Update
         </button>
+
     </div>
     </form>
 
