@@ -98,17 +98,22 @@ class RegisseurController extends Controller
                // dd($sum);
 
 
-                APPROVISIONNEMENT::find($month->id)->update([
+               $var= APPROVISIONNEMENT::find($month->id) ;
+                   $var->update([
 
                       'Somme' => $sum,
-                      '0.5' => $request[$month->mois]['0.5'],
+
                       '1' => $request[$month->mois]['1'],
                       '2' => $request[$month->mois]['2'],
                       '5' => $request[$month->mois]['5'],
                       '50' => $request[$month->mois]['50'],
 
                   ]);
-
+                $racho = '0.5';
+                $newValue = $request[$month->mois][$racho];
+                $varId = $var->id;
+                $sql = "UPDATE `a_p_p_r_o_v_i_s_i_o_n_n_e_m_e_n_t_s` SET `$racho` = ?, `updated_at` = ? WHERE `id` = ?";
+                DB::statement($sql, [$newValue, now(), $varId]);
             }
         }
         else{
@@ -129,10 +134,12 @@ class RegisseurController extends Controller
                     '50' => $request[$month]['50'],
                     'regisseur_id' => $IDRegisseur,
                 ]);
-                /*$racho='0.5';
-                $var=APPROVISIONNEMENT::find($var->id);
-                $var->$racho=$request[$month]['0.5'];
-                $var->save();*/
+                $racho = '0.5';
+                $newValue = $request[$month][$racho];
+                $varId = $var->id;
+                $sql = "UPDATE `a_p_p_r_o_v_i_s_i_o_n_n_e_m_e_n_t_s` SET `$racho` = ?, `updated_at` = ? WHERE `id` = ?";
+                DB::statement($sql, [$newValue, now(), $varId]);
+
 
             }
         }
