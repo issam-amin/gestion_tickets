@@ -21,6 +21,7 @@ class CuController extends Controller
                     'CUS'=> $cus
                 ]);
     }
+
     public function show($cu_name)
     {
         $cu=[];$regisseurs=[];$typRegi=[];$annees=[];

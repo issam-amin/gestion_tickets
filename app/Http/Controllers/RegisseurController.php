@@ -13,17 +13,17 @@ class RegisseurController extends Controller
      */
     public function index(Request $request)
     {
-        dd($request->all());
+        //dd($request->all());
 
         $regisseur=regisseur::find($request->regisseurs);
         $cuName= $regisseur->cu()->first()->cu_name;
-       // dd( $regisseur->cu()->first()->cu_name);
+       //dd( $regisseur->cu()->first()->cu_name);
         $months = [
             'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
             'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
         ];
-
-        switch ($request->typeRegisseur) {
+       // dd($request->typeRegi);
+        switch ($request->typeRegi) {
             case 'approvisionnement':
                 $donnes=DB::table('a_p_p_r_o_v_i_s_i_o_n_n_e_m_e_n_t_s')
                     ->where('regisseur_id',$request->regisseurs)
@@ -37,17 +37,20 @@ class RegisseurController extends Controller
                     ->get();
                 break;
             case 'chez_tp':
-                $donnes=DB::table('chez_t_p_s')
+                $donnes=DB::table('chez__t_p_s')
                     ->where('regisseur_id',$request->regisseurs)
                     ->where('annee',$request->anneetab)
                     ->get();
                 break;
         }
-        return view('cu'.$request->typeRegisseur, [
-            'typeRegisseur' => $request->typeRegisseur,
+       // dd("cu".$request->typeRegi);
+        return view('/cu/'.$request->typeRegi, [
+            'typeRegisseur' => $request->typeRegi,
             'months' => $months,
             'name' => $regisseur->name,
             'cu_name' => $cuName,
+            'donnes' => $donnes,
+            'annee' => $request->anneetab,
         ]);
     }
 

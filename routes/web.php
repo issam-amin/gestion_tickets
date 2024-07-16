@@ -18,5 +18,6 @@ Route::controller(RegisseurController::class)->group(function (){
 
     Route::post('/Regisseur', 'index');
 
+
 });
 Route::view('/CR','CR');
