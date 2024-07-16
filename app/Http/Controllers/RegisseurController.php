@@ -52,7 +52,6 @@ class RegisseurController extends Controller
         }
 
 
-
         return view('/cu/'.$request->typeRegi, [
             'IDRegisseur' => $request->regisseurs,
             'typeRegisseur' => $request->typeRegi,
@@ -85,34 +84,30 @@ class RegisseurController extends Controller
         ];
 
         $check=DB::table('a_p_p_r_o_v_i_s_i_o_n_n_e_m_e_n_t_s')
-            ->where('regisseur_id',$request->regisseurs)
-            ->where('annee',$request->anneetab)
+            ->where('regisseur_id',$IDRegisseur)
+            ->where('annee',$annee)
             ->orderBy('id')
             ->get();
-
-        if($check){
+        if($check->count()!=0 ){
 
             foreach ($check as $month) {
+                $sum=0;
+                foreach ($request[$month->mois] as $coeff => $value) {
+                    $sum += doubleval($value)*doubleval($coeff);
+                }
+               // dd($sum);
 
-                $coeff=['0.5'=>'0.5','1'=>'1','2'=>'2','5'=>'5','50'=>'50'];
-                    $sum = doubleval($month->$coeff['0.5'])*0.5
-                        + doubleval($month->$coeff['1'])*1
-                        + doubleval($month->$coeff['2'])*2
-                        + doubleval($month->$coeff['5'])*5
-                        + doubleval($month->$coeff['50'])*50;
 
-dd($sum);
-              /*$month  updat([
-                    'mois' => $month,
-                    'annee' => $annee,
-                    'Somme' => $sum,
-                    '0.5' => $request[$month]['0.5'],
-                    '1' => $request[$month]['1'],
-                    '2' => $request[$month]['2'],
-                    '5' => $request[$month]['5'],
-                    '50' => $request[$month]['50'],
-                    'regisseur_id' => $IDRegisseur,
-                ]);*/
+                APPROVISIONNEMENT::find($month->id)->update([
+
+                      'Somme' => $sum,
+                      '0.5' => $request[$month->mois]['0.5'],
+                      '1' => $request[$month->mois]['1'],
+                      '2' => $request[$month->mois]['2'],
+                      '5' => $request[$month->mois]['5'],
+                      '50' => $request[$month->mois]['50'],
+
+                  ]);
 
             }
         }
@@ -123,25 +118,26 @@ dd($sum);
                     $sum += doubleval($value)*doubleval($coeff);
                 }
 
-                Approvisionnement::create([
+               $var= Approvisionnement::create([
                     'mois' => $month,
                     'annee' => $annee,
                     'Somme' => $sum,
-                    '0.5' => $request[$month]['0.5'],
+
                     '1' => $request[$month]['1'],
                     '2' => $request[$month]['2'],
                     '5' => $request[$month]['5'],
                     '50' => $request[$month]['50'],
                     'regisseur_id' => $IDRegisseur,
                 ]);
+                /*$racho='0.5';
+                $var=APPROVISIONNEMENT::find($var->id);
+                $var->$racho=$request[$month]['0.5'];
+                $var->save();*/
 
             }
         }
-
-
-
-
-       // return redirect()->back();
+        $commune=regisseur::find($IDRegisseur)->cu()->first();
+        return redirect('/Cu/'.$commune->cu_name);
     }
 
 

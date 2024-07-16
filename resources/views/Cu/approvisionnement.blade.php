@@ -36,7 +36,7 @@
                         <td class="px-6 py-4 border-b border-gray-300">
                             <input name="{{$month . '[' .$value .']' }}" class="block w-75 px-6 py-3 text-black bg-white border
                             border-gray-200 rounded-full appearance-none placeholder:text-gray-400 focus:border-blue-500
-                            focus:outline-none focus:ring-blue-500 sm:text-sm max-w-[220px]" value="{{$donnes[$i]->$value}}" type="number">
+                            focus:outline-none focus:ring-blue-500 sm:text-sm max-w-[220px]" value="{{$donnes->count()==0 ? 0 : $donnes[$i]->$value}}" type="number">
 
                         </td>
                     @endforeach
