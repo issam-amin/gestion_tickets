@@ -6,12 +6,12 @@
         <p>L'année: {{$annee}}</p>
 
     </x-slot>
-    <form method="POST" action="">
+    <form method="POST" action="/{{$typeRegisseur}}/{{$annee}}/{{$IDRegisseur}}">
         @csrf
     <table class="table table-striped table-hover ">
         <thead>
         <tr>
-            <th scope="row" colspan="6" class="text-center">{{strtoupper($typeRegisseur)}}</th>
+            <th scope="row" colspan="6" class="text-center text-red-500">CHEZ TP</th>
         </tr>
         <tr class="text-center">
             <th scope="col">Mois</th>
@@ -23,7 +23,21 @@
         <tbody>
 
         <tr>
-            <th scope="row" class="text-center">Reste</th>
+            <th scope="row" class="text-center">Reprise</th>
+            @for($i=0;$i<5;$i++)
+                <td class="px-6 py-4 border-b border-gray-300 ">
+                </td>
+            @endfor
+        </tr>
+        <tr>
+            <th scope="row" class="text-center">Reprise chez les regisseurs</th>
+            @for($i=0;$i<5;$i++)
+                <td class="px-6 py-4 border-b border-gray-300 ">
+                </td>
+            @endfor
+        </tr>
+        <tr>
+            <th scope="row" class="text-center">Total</th>
             @for($i=0;$i<5;$i++)
                 <td class="px-6 py-4 border-b border-gray-300 ">
                 </td>
@@ -34,9 +48,9 @@
             <th scope="row" class="text-center mt-10">{{$month}}</th>
             @for($i=0;$i<5;$i++)
                 <td class="px-6 py-4 border-b border-gray-300">
-                    <input class="block w-75 px-6 py-3 text-black bg-white border border-gray-200 rounded-full appearance-none
+                    <input class="block w-75 px-6 py-3 text-black bg-blue-200 border border-black-900 rounded-full appearance-none
                     placeholder:text-gray-400 focus:border-blue-500 focus:outline-none
-                    focus:ring-blue-500 sm:text-sm max-w-[220px]" placeholder="number" id="number" type="number">
+                    focus:ring-blue-500 sm:text-sm max-w-[220px]"  id="number" type="number">
                 </td>
             @endfor
 

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @method static find($id)
@@ -21,5 +22,9 @@ class regisseur extends Model
     public function cr(): BelongsTo
     {
         return $this->belongsTo(CU::class);
+    }
+    public function total(): HasMany
+    {
+        return $this->HasMany(total::class);
     }
 }

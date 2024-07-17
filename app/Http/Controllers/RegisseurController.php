@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\APPROVISIONNEMENT;
 use App\Models\regisseur;
+use App\Models\VERSEMENT;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
@@ -73,30 +74,30 @@ class RegisseurController extends Controller
 
     }
 
-    /**
+     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, $annee, $IDRegisseur)
+    public function store(Request $request, $typeRegisseur,$annee, $IDRegisseur)
     {
         $months = [
             'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
             'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
         ];
 
+if ($typeRegisseur=='approvisionnement'){
         $check=DB::table('a_p_p_r_o_v_i_s_i_o_n_n_e_m_e_n_t_s')
             ->where('regisseur_id',$IDRegisseur)
             ->where('annee',$annee)
             ->orderBy('id')
             ->get();
         if($check->count()!=0 ){
-
             foreach ($check as $month) {
                 $sum=0;
                 foreach ($request[$month->mois] as $coeff => $value) {
                     $sum += doubleval($value)*doubleval($coeff);
                 }
                // dd($sum);
-
+                $sums[$month->mois] = $sum;
 
                $var= APPROVISIONNEMENT::find($month->id) ;
                    $var->update([
@@ -122,6 +123,7 @@ class RegisseurController extends Controller
                 foreach ($request[$month] as $coeff => $value) {
                     $sum += doubleval($value)*doubleval($coeff);
                 }
+                $sums[$month] = $sum;
 
                $var= Approvisionnement::create([
                     'mois' => $month,
@@ -143,9 +145,74 @@ class RegisseurController extends Controller
 
             }
         }
+}
+elseif ($typeRegisseur=='versement'){
+    $check=DB::table('v_e_r_s_e_m_e_n_t_s')
+        ->where('regisseur_id',$IDRegisseur)
+        ->where('annee',$annee)
+        ->orderBy('id')
+        ->get();
+    if($check->count()!=0 ){
+        foreach ($check as $month) {
+            $sum=0;
+            foreach ($request[$month->mois] as $coeff => $value) {
+                $sum += doubleval($value)*doubleval($coeff);
+            }
+            // dd($sum);
+            $sums[$month->mois] = $sum;
+
+            $var= VERSEMENT::find($month->id) ;
+            $var->update([
+
+                'Somme' => $sum,
+
+                '1' => $request[$month->mois]['1'],
+                '2' => $request[$month->mois]['2'],
+                '5' => $request[$month->mois]['5'],
+                '50' => $request[$month->mois]['50'],
+
+            ]);
+            $racho = '0.5';
+            $newValue = $request[$month->mois][$racho];
+            $varId = $var->id;
+            $sql = "UPDATE `v_e_r_s_e_m_e_n_t_s` SET `$racho` = ?, `updated_at` = ? WHERE `id` = ?";
+            DB::statement($sql, [$newValue, now(), $varId]);
+        }
+    }
+    else{
+        foreach ($months as $month) {
+            $sum=0;
+            foreach ($request[$month] as $coeff => $value) {
+                $sum += doubleval($value)*doubleval($coeff);
+            }
+            $sums[$month] = $sum;
+
+            $var= VERSEMENT::create([
+                'mois' => $month,
+                'annee' => $annee,
+                'Somme' => $sum,
+
+                '1' => $request[$month]['1'],
+                '2' => $request[$month]['2'],
+                '5' => $request[$month]['5'],
+                '50' => $request[$month]['50'],
+                'regisseur_id' => $IDRegisseur,
+            ]);
+            $racho = '0.5';
+            $newValue = $request[$month][$racho];
+            $varId = $var->id;
+            $sql = "UPDATE `v_e_r_s_e_m_e_n_t_s` SET `$racho` = ?, `updated_at` = ? WHERE `id` = ?";
+            DB::statement($sql, [$newValue, now(), $varId]);
+
+
+        }
+    }
+}
+        TotalController::class->store($request, $typeRegisseur,$annee, $IDRegisseur);
         $commune=regisseur::find($IDRegisseur)->cu()->first();
         return redirect('/Cu/'.$commune->cu_name);
     }
+
 
 
 
