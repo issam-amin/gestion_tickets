@@ -7,6 +7,7 @@
 
     </x-slot>
     <form method="POST" action="/{{$typeRegisseur}}/{{$annee}}/{{$IDRegisseur}}">
+
         @csrf
         <table class="table table-striped table-hover ">
             <thead>
@@ -41,23 +42,23 @@
             @endforeach
 
             <tr>
-                @foreach($values as $value)
-                    @php
-                        $sum = 0;
-                        foreach($months as $monthIndex => $month) {
-                            $sum += isset($donnes[$monthIndex]) && isset($donnes[$monthIndex]->$value) ? $donnes[$monthIndex]->$value : 0;
-                        }
-                    @endphp
-                    @php $total[] = $sum * doubleval($value) @endphp
-                @endforeach
                 <th scope="row" class="text-center">TOTAL</th>
-                @foreach($total as $sum)
+
+                @php
+                    $totalsum = [];
+                    $valeurs = ['0.5', '1', '2', '5', '50'];
+                @endphp
+
+                @foreach($valeurs as $value)
                     <td class="px-6 py-4 border-b border-gray-300">
-                        {{ $sum }}
+                        {{ $total[0]->{$value} ?? '0' }}
+                        @php($totalsum[] = $total[0]->{$value} ?? 0)
                     </td>
                 @endforeach
+
+
                 <td class="px-6 py-4 border-b border-gray-300 ">
-                    {{ array_sum($total) }}
+                    {{ array_sum($totalsum) }}
                 </td>
             </tr>
             </tbody>

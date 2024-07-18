@@ -35,11 +35,23 @@ class RegisseurController extends Controller
                     ->where('annee',$request->anneetab)
                     ->orderBy('id')
                     ->get();
+                $total=DB::table('totals')
+                    ->where('regisseur_id',$request->regisseurs)
+                    ->where('annee',$request->anneetab)
+                    ->where('type','approvisionnement')
+                    ->orderBy('id')
+                    ->get();
                 break;
             case 'versement':
                 $donnes=DB::table('v_e_r_s_e_m_e_n_t_s')
                     ->where('regisseur_id',$request->regisseurs)
                     ->where('annee',$request->anneetab)
+                    ->orderBy('id')
+                    ->get();
+                $total=DB::table('totals')
+                    ->where('regisseur_id',$request->regisseurs)
+                    ->where('annee',$request->anneetab)
+                    ->where('type','versement')
                     ->orderBy('id')
                     ->get();
                 break;
@@ -61,6 +73,7 @@ class RegisseurController extends Controller
             'name' => $regisseur->name,
             'cu_name' => $cuName,
             'donnes' => $donnes,
+            'total' => $total,
             'annee' => $request->anneetab,
         ]);
     }
@@ -208,7 +221,9 @@ elseif ($typeRegisseur=='versement'){
         }
     }
 }
-        TotalController::class->store($request, $typeRegisseur,$annee, $IDRegisseur);
+        $totalController = new TotalController();
+        $totalController->store($request, $typeRegisseur, $annee, $IDRegisseur);
+
         $commune=regisseur::find($IDRegisseur)->cu()->first();
         return redirect('/Cu/'.$commune->cu_name);
     }
