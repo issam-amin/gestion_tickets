@@ -41,6 +41,12 @@ class RegisseurController extends Controller
                     ->where('type','approvisionnement')
                     ->orderBy('id')
                     ->get();
+                $reprise=DB::table('totals')
+                    ->where('regisseur_id',$request->regisseurs)
+                    ->where('annee',$request->anneetab-1)
+                    ->orderBy('id')
+                    ->get();
+                //dd($reprise);
                 break;
             case 'versement':
                 $donnes=DB::table('v_e_r_s_e_m_e_n_t_s')
@@ -52,6 +58,11 @@ class RegisseurController extends Controller
                     ->where('regisseur_id',$request->regisseurs)
                     ->where('annee',$request->anneetab)
                     ->where('type','versement')
+                    ->orderBy('id')
+                    ->get();
+                $reprise=DB::table('totals')
+                    ->where('regisseur_id',$request->regisseurs)
+                    ->where('annee',$request->anneetab-1)
                     ->orderBy('id')
                     ->get();
                 break;
@@ -74,6 +85,7 @@ class RegisseurController extends Controller
             'cu_name' => $cuName,
             'donnes' => $donnes,
             'total' => $total,
+            'reprise' => $reprise,
             'annee' => $request->anneetab,
         ]);
     }
@@ -236,7 +248,7 @@ elseif ($typeRegisseur=='versement'){
      */
     public function show(string $id)
     {
-        //
+
     }
 
     /**

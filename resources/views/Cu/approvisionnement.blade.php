@@ -1,15 +1,31 @@
 <x-layout>
     <x-slot name="headings">
-        <div>Tableau de Commune Urbaine : {{$cu_name}}</div>
-        <div class="flex flex-row justify-between mt-4">
-            <div class="font-extrabold text-blue-900 mr-4">Regisseur de : "{{$name}}"</div>
-            <div class="font-extrabold text-red-500 ml-4">L'année : {{$annee}}</div>
-            <x-nav-link> Voir Recap</x-nav-link>
+        <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+            <div class="text-xl font-bold text-gray-800 mb-4">Tableau de Commune Urbaine : {{$cu_name}}</div>
+            <div class="bg-white shadow-md rounded-lg p-6 flex flex-col sm:flex-row sm:justify-between items-center">
+                <div class="font-extrabold text-blue-900 mr-4 mb-4 sm:mb-0">Regisseur de : "{{$name}}"</div>
+                <div class="font-extrabold text-red-500 ml-4 mb-4 sm:mb-0">L'année : {{$annee}}</div>
+            </div>
+            <x-button class="bg-blue-500 hover:bg-blue-700 text-black font-bold py-2 px-4 rounded" href="/Regisseur/{{$IDRegisseur}}/{{$annee}}">Voir Recap</x-button>
+
         </div>
+
     </x-slot>
 
     <form method="POST" action="/{{$typeRegisseur}}/{{$annee}}/{{$IDRegisseur}}">
         @csrf
+
+        <div class="flex items-center gap-x-6 mt-40">
+            <a href="/Cu/{{$cu_name}}" class="text-sm font-semibold leading-6 text-gray-900 hover:text-indigo-600 transition duration-200 ease-in-out">
+                Cancel
+            </a>
+            <div>
+                <button type="submit" class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm
+                hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 transition duration-200 ease-in-out">
+                    Save
+                </button>
+            </div>
+        </div>
 
         <table class="table table-striped table-hover table-sm">
             <thead>
@@ -26,9 +42,15 @@
             </thead>
             <tbody>
             <tr>
-                <th scope="row" class="text-center">Reprise</th>
-                @for($i = 0; $i < count($values); $i++)
-                    <td class="px-6 py-4 border-b border-gray-300"></td>
+                @php
+                    $totalsum = [];
+                    $valeurs = ['0.5', '1', '2', '5', '50'];
+                @endphp
+                <th scope="row" class="text-center">Reprise Annee</th>
+                @for($i = 0; $i < count($valeurs); $i++)
+                    <td class="text-center py-4 border-b border-gray-300">
+                        {{ isset($reprise[0]->{$valeurs[$i]}) ? $reprise[0]->{$valeurs[$i]} : 0 }}
+                    </td>
                 @endfor
                 <td class="px-6 py-4 border-b border-gray-300"></td>
             </tr>
@@ -56,10 +78,7 @@
             <tr>
                 <th scope="row" class="text-center">TOTAL</th>
 
-                @php
-                    $totalsum = [];
-                    $valeurs = ['0.5', '1', '2', '5', '50'];
-                @endphp
+
 
                 @foreach($valeurs as $value)
                     <td class="px-6 py-4 border-b border-gray-300">
@@ -76,20 +95,7 @@
             </tbody>
         </table>
 
-        <div class="mt-1 flex items-center justify-between gap-x-6">
-            <div class="flex items-center justify-content-between">
-                <div>
-                    <a href="#" class="text-sm font-semibold leading-6 text-gray-900">Cancel</a>
-                </div>
-                <div>
-                    <button type="submit" class="rounded-md bg-indigo-600 px-3 py-2
-                     text-sm font-semibold text-white shadow-sm hover:bg-indigo-500
-                     focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2
-                     focus-visible:outline-indigo-600">
-                        SAVE
-                    </button>
-                </div>
-            </div>
-        </div>
+
+
     </form>
 </x-layout>

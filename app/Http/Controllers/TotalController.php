@@ -29,51 +29,22 @@ class TotalController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, $typeRegisseur,$annee, $IDRegisseur)
+    public function store(Request $request, $typeRegisseur, $annee, $IDRegisseur)
     {
-        $check=DB::table('totals')
-            ->where('regisseur_id',$IDRegisseur)
-            ->where('annee',$annee)
+        $check = DB::table('totals')
+            ->where('regisseur_id', $IDRegisseur)
+            ->where('annee', $annee)
+            ->where('type', $typeRegisseur)
             ->orderBy('id')
             ->get();
 
-        if ($check->count()==0){
-                $var= total::create([
-                    'type' => $typeRegisseur,
-                    'annee' => $annee,
-                    'regisseur_id' => $IDRegisseur,
-                ]);
-                $months = [
-                    'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
-                    'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
-                ];
-
-                $keysToFetch = ['0.5', 1, 2, 5, 50];
-                foreach ($keysToFetch as $key) {
-                    $sum=0;
-                    foreach ($months as $month) {
-                        $sum += $request[$month][$key];
-                    }
-                    $totalMensuelle=$sum*$key;
-                    //dd($totalMensuelle);
-                        $newValue =  $totalMensuelle;
-                        $varId = $var->id;
-                    $sql = "UPDATE `totals` SET `$key` = ?, `updated_at` = ? WHERE `id` = ?";
-                        DB::statement($sql, [$newValue, now(), $varId]);
-
-        }
-        }
-        else {
-
-            foreach ($check as $var){
-                //dd($var->id);
-            $var = total::find($var->id);
-            $var->update([
+        if ($check->count() == 0) {
+            $var = total::create([
                 'type' => $typeRegisseur,
                 'annee' => $annee,
                 'regisseur_id' => $IDRegisseur,
             ]);
-            }
+
             $months = [
                 'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
                 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
@@ -86,23 +57,68 @@ class TotalController extends Controller
                     $sum += $request[$month][$key];
                 }
                 $totalMensuelle = $sum * $key;
-                //dd($totalMensuelle);
                 $newValue = $totalMensuelle;
                 $varId = $var->id;
                 $sql = "UPDATE `totals` SET `$key` = ?, `updated_at` = ? WHERE `id` = ?";
                 DB::statement($sql, [$newValue, now(), $varId]);
             }
+        } else {
+            foreach ($check as $item) {
+                $var = total::find($item->id);
+                $var->update([
+                    'type' => $typeRegisseur,
+                    'annee' => $annee,
+                    'regisseur_id' => $IDRegisseur,
+                ]);
+
+                $months = [
+                    'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+                    'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+                ];
+
+                $keysToFetch = ['0.5', 1, 2, 5, 50];
+                foreach ($keysToFetch as $key) {
+                    $sum = 0;
+                    foreach ($months as $month) {
+                        $sum += $request[$month][$key];
+                    }
+                    $totalMensuelle = $sum * $key;
+                    $newValue = $totalMensuelle;
+                    $varId = $var->id;
+                    $sql = "UPDATE `totals` SET `$key` = ?, `updated_at` = ? WHERE `id` = ?";
+                    DB::statement($sql, [$newValue, now(), $varId]);
+                }
+            }
         }
-        $commune=regisseur::find($IDRegisseur)->cu()->first();
-        return redirect('/Cu/'.$commune->cu_name);
+
+        $commune = regisseur::find($IDRegisseur)->cu()->first();
+        return redirect('/Cu/' . $commune->cu_name);
     }
+
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show( $id,  $annee)
     {
-        //
+       //dd($id, $annee);
+        $regisseur=regisseur::find($id);
+
+       // dd($regisseur->name);
+        $values = ['0.5', '1', '2', '5', '50'];
+        $QUE = DB::table('totals')
+            ->where('regisseur_id', $id)
+            ->where('annee', $annee)
+            ->orderBy('id')
+            ->get();
+        //dd($QUE);
+        return view('/cu/Recape', [
+            'name' => $regisseur->name,
+            'total' => $QUE,
+            'IDRegisseur' => $id,
+            'values' => $values,
+            'annee' => $annee,
+        ]);
     }
 
     /**

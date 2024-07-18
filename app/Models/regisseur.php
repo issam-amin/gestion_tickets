@@ -27,4 +27,8 @@ class regisseur extends Model
     {
         return $this->HasMany(total::class);
     }
+    public function recap(): HasMany
+    {
+        return $this->HasMany(recap::class);
+    }
 }

@@ -24,6 +24,8 @@ Route::controller(RegisseurController::class)->group(function (){
 Route::controller(TotalController::class)->group(function (){
 
     Route::post('/Total/{typeRegisseur}/{annee}/{IDRegisseur}', 'store');
+    Route::get('/Regisseur/{IDRegisseur}/{annee}', 'show');
+
 });
 
 Route::view('/CR','CR');
