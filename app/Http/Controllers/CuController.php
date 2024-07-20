@@ -34,7 +34,7 @@ class CuController extends Controller
             dd('CU not found');
         }
         $typRegi=['approvisionnement','versement','chez_tp'];
-        for ($i=2010;$i<Carbon::now()->year+1;$i++){
+        for ($i=2023;$i<Carbon::now()->year+1;$i++){
             $annees[]=$i;
         }
 
@@ -42,6 +42,7 @@ class CuController extends Controller
         // dd($regisseurs);
         return view('cu.show',
             [
+                'cu_name'=>$cu_name,
                 'nomCom' => $cu,
                 'regisseurs' => $regisseurs,
                 'typeRegisseur' => $typRegi,

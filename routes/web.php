@@ -19,6 +19,7 @@ Route::controller(RegisseurController::class)->group(function (){
 
     Route::post('/Regisseur', 'index');
     Route::post('/{typeRegisseur}/{annee}/{IDRegisseur}',  'store');
+    Route::post('/{cu_name}', 'show');
 
 });
 Route::controller(TotalController::class)->group(function (){
@@ -27,5 +28,5 @@ Route::controller(TotalController::class)->group(function (){
     Route::get('/Regisseur/{IDRegisseur}/{annee}', 'show');
 
 });
-
+Route::view('/Trecap','Trecap');
 Route::view('/CR','CR');

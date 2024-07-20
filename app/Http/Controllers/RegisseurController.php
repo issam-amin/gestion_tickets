@@ -3,13 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\APPROVISIONNEMENT;
+use App\Models\CU;
 use App\Models\regisseur;
+use App\Models\Total;
 use App\Models\VERSEMENT;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use JetBrains\PhpStorm\NoReturn;
 
 class RegisseurController extends Controller
 {
@@ -19,7 +22,9 @@ class RegisseurController extends Controller
     public function index(Request $request): View|Factory|Application
     {
         //dd($request->all());
-        $regisseur=regisseur::find($request->regisseurs);
+        if (!empty($request->regisseurs)) {
+            $regisseur=regisseur::find($request->regisseurs);
+        }
         $cuName= $regisseur->cu()->first()->cu_name;
        //dd( $regisseur->cu()->first()->cu_name);
         $values = [0.5, 1, 2, 5, 50];
@@ -70,6 +75,17 @@ class RegisseurController extends Controller
                 $donnes=DB::table('chez__t_p_s')
                     ->where('regisseur_id',$request->regisseurs)
                     ->where('annee',$request->anneetab)
+                    ->orderBy('id')
+                    ->get();
+                $total=DB::table('totals')
+                    ->where('regisseur_id',$request->regisseurs)
+                    ->where('annee',$request->anneetab)
+                    ->where('type','versement')
+                    ->orderBy('id')
+                    ->get();
+                $reprise=DB::table('totals')
+                    ->where('regisseur_id',$request->regisseurs)
+                    ->where('annee',$request->anneetab-1)
                     ->orderBy('id')
                     ->get();
                 break;
@@ -246,8 +262,65 @@ elseif ($typeRegisseur=='versement'){
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Request $request, $cu_name)
     {
+
+        $selectedYear = $request->input('anneetab1');
+        $values = ['0.5','1', '2', '5', '50'];
+        $total_appro = [];
+        $total_ver = [];
+        $cu = CU::where('cu_name', $cu_name)->first();
+        $idregis = $cu->regisseur->pluck('id');
+//Approvisionnement
+        foreach ($idregis as $id) {
+            foreach ($values as $value) {
+                $column = "`" . $value . "`"; // Quote column name
+                $total_appro[$id][$value] = DB::table('totals')
+                    ->where('regisseur_id', $id)
+                    ->where('annee', $selectedYear)
+                    ->where('type', 'approvisionnement')
+                    ->sum(DB::raw($column));
+            }
+        }
+        foreach ($values as $value) {
+            $total_sum = 0;
+            foreach ($total_appro as $id => $appro) {
+                if (isset($appro[$value])) {
+
+                    $total_sum += $appro[$value];
+                }
+            }
+            $total_appro['total'][$value] = $total_sum;
+        }
+// Versement
+        foreach ($idregis as $id) {
+            foreach ($values as $value) {
+                $column = "`" . $value . "`"; // Quote column name
+                $total_ver[$id][$value] = DB::table('totals')
+                    ->where('regisseur_id', $id)
+                    ->where('annee', $selectedYear)
+                    ->where('type', 'versement')
+                    ->sum(DB::raw($column));
+            }
+        }
+        foreach ($values as $value) {
+            $total_sum = 0;
+            foreach ($total_ver as $id => $ver) {
+                if (isset($ver[$value])) {
+
+                    $total_sum += $ver[$value];
+                }
+            }
+            $total_ver['total'][$value] = $total_sum;
+        }
+
+        return view('Cu.totalRecap', [
+            'values' => $values,
+            'cu_name' => $cu_name,
+            'total_appro' => $total_appro,
+            'total_ver' => $total_ver,
+            'selectedYear' => $selectedYear,
+        ]);
 
     }
 

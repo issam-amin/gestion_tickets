@@ -15,17 +15,7 @@
     <form method="POST" action="/{{$typeRegisseur}}/{{$annee}}/{{$IDRegisseur}}">
         @csrf
 
-        <div class="flex items-center gap-x-6 mt-40">
-            <a href="/Cu/{{$cu_name}}" class="text-sm font-semibold leading-6 text-gray-900 hover:text-indigo-600 transition duration-200 ease-in-out">
-                Cancel
-            </a>
-            <div>
-                <button type="submit" class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm
-                hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 transition duration-200 ease-in-out">
-                    Save
-                </button>
-            </div>
-        </div>
+
 
         <table class="table table-striped table-hover table-sm">
             <thead>
@@ -94,7 +84,17 @@
             </tr>
             </tbody>
         </table>
-
+        <div class="flex items-center justify-between">
+            <a href="/Cu/{{$cu_name}}" class="text-sm font-semibold leading-6 text-gray-900 hover:text-indigo-600 transition duration-200 ease-in-out">
+                Cancel
+            </a>
+            <div>
+                <button type="submit" class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm
+                hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600 transition duration-200 ease-in-out">
+                    Save
+                </button>
+            </div>
+        </div>
 
 
     </form>
