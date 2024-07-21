@@ -34,7 +34,7 @@
         <tbody>
 
         <tr>
-            <th scope="row" class="text-center">Reprise</th>
+            <th scope="row" class="text-center">Reprise chez Tp</th>
             @for($i=0;$i<5;$i++)
                 <td class="px-6 py-4 border-b border-gray-300 ">
 
@@ -45,9 +45,7 @@
             <th scope="row" class="text-center">Reprise chez les regisseurs</th>
             @for($i=0;$i<5;$i++)
                 <td class="px-6 py-4 border-b border-gray-300 ">
-                    <input class="block w-75 px-6 py-3 text-black bg-blue-200 border border-black-900 rounded-full appearance-none
-                    placeholder:text-gray-400 focus:border-blue-500 focus:outline-none
-                    focus:ring-blue-500 sm:text-sm max-w-[220px]"  id="number" type="number">
+
                 </td>
             @endfor
         </tr>

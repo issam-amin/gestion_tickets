@@ -49,11 +49,11 @@
             </select>
         </div>
         </div>
-       <button type="submit" class="btn btn-light">Submit</button>
+       <x-form-button type="submit" class="btn btn-light">Submit</x-form-button>
 
     </form>
 
-    <form method="POST" action="/{{$cu_name}}">
+    <form method="POST" action="/show/{{$cu_name}}">
         @csrf
         <div class="flex items-center justify-content-around flex-column" style="margin-top:50px">
             <p class="text-3xl dark:text-white font-bold text-blue-500">La Recaps De La Liste Des Regisseurs :</p>
@@ -69,7 +69,7 @@
                     @endif
                 </select>
             </div>
-            <button type="submit" class="btn btn-light">Visualiser</button>
+            <x-form-button type="submit" class="btn btn-light">Visualiser</x-form-button>
         </div>
     </form>
 

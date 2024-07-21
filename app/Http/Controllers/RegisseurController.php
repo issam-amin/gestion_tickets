@@ -21,7 +21,7 @@ class RegisseurController extends Controller
      */
     public function index(Request $request): View|Factory|Application
     {
-        //dd($request->all());
+
         if (!empty($request->regisseurs)) {
             $regisseur=regisseur::find($request->regisseurs);
         }
@@ -232,7 +232,6 @@ elseif ($typeRegisseur=='versement'){
                 'mois' => $month,
                 'annee' => $annee,
                 'Somme' => $sum,
-
                 '1' => $request[$month]['1'],
                 '2' => $request[$month]['2'],
                 '5' => $request[$month]['5'],
@@ -270,6 +269,7 @@ elseif ($typeRegisseur=='versement'){
         $total_appro = [];
         $total_ver = [];
         $cu = CU::where('cu_name', $cu_name)->first();
+        dd($cu);
         $idregis = $cu->regisseur->pluck('id');
 //Approvisionnement
         foreach ($idregis as $id) {
@@ -313,7 +313,6 @@ elseif ($typeRegisseur=='versement'){
             }
             $total_ver['total'][$value] = $total_sum;
         }
-
         return view('Cu.totalRecap', [
             'values' => $values,
             'cu_name' => $cu_name,

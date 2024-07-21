@@ -16,17 +16,17 @@ Route::controller(CuController::class)->group(function (){
 
 });
 Route::controller(RegisseurController::class)->group(function (){
-
     Route::post('/Regisseur', 'index');
     Route::post('/{typeRegisseur}/{annee}/{IDRegisseur}',  'store');
-    Route::post('/{cu_name}', 'show');
+    Route::post('/show/{cu_name}', 'show');
 
 });
 Route::controller(TotalController::class)->group(function (){
-
+    Route::get('/baine','index');
+    Route::get('/Rurale','index');
     Route::post('/Total/{typeRegisseur}/{annee}/{IDRegisseur}', 'store');
     Route::get('/Regisseur/{IDRegisseur}/{annee}', 'show');
-
+    Route::post('/choix', 'display');
 });
-Route::view('/Trecap','Trecap');
+Route::view('/Trecap','/TotalRecap/Trecap');
 Route::view('/CR','CR');
