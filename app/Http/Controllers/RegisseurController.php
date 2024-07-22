@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\APPROVISIONNEMENT;
+use App\Models\Chez_TP;
 use App\Models\CU;
 use App\Models\regisseur;
 use App\Models\Total;
@@ -218,6 +219,68 @@ elseif ($typeRegisseur=='versement'){
         }
     }
 }
+elseif ($typeRegisseur=='chez_tp'){
+    $check=DB::table('chez__t_p_s')
+        ->where('regisseur_id',$IDRegisseur)
+        ->where('annee',$annee)
+        ->orderBy('id')
+        ->get();
+    if($check->count()!=0 ){
+        foreach ($check as $month) {
+            $sum=0;
+            foreach ($request[$month->mois] as $coeff => $value) {
+                $sum += doubleval($value)*doubleval($coeff);
+            }
+            // dd($sum);
+            $sums[$month->mois] = $sum;
+
+            $var= Chez_TP::find($month->id) ;
+            $var->update([
+
+                'Somme' => $sum,
+
+                '1' => $request[$month->mois]['1'],
+                '2' => $request[$month->mois]['2'],
+                '5' => $request[$month->mois]['5'],
+                '50' => $request[$month->mois]['50'],
+
+            ]);
+            $racho = '0.5';
+            $newValue = $request[$month->mois][$racho];
+            $varId = $var->id;
+            $sql = "UPDATE `chez__t_p_s` SET `$racho` = ?, `updated_at` = ? WHERE `id` = ?";
+            DB::statement($sql, [$newValue, now(), $varId]);
+        }
+    }
+    else{
+        foreach ($months as $month) {
+            $sum=0;
+            foreach ($request[$month] as $coeff => $value) {
+                $sum += doubleval($value)*doubleval($coeff);
+            }
+            $sums[$month] = $sum;
+
+            $var= Chez_TP::create([
+                'mois' => $month,
+                'annee' => $annee,
+                'Somme' => $sum,
+                '1' => $request[$month]['1'],
+                '2' => $request[$month]['2'],
+                '5' => $request[$month]['5'],
+                '50' => $request[$month]['50'],
+                'regisseur_id' => $IDRegisseur,
+            ]);
+            $racho = '0.5';
+            $newValue = $request[$month][$racho];
+            $varId = $var->id;
+            $sql = "UPDATE `chez__t_p_s` SET `$racho` = ?, `updated_at` = ? WHERE `id` = ?";
+            DB::statement($sql, [$newValue, now(), $varId]);
+
+
+        }
+    }
+}
+
         $totalController = new TotalController();
         $totalController->store($request, $typeRegisseur, $annee, $IDRegisseur);
 

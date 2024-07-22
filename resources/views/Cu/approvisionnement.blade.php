@@ -36,7 +36,7 @@
                     $totalsum = [];
                     $valeurs = ['0.5', '1', '2', '5', '50'];
                 @endphp
-                <th scope="row" class="text-center">Reprise Annee</th>
+                <th scope="row" class="text-center">Reprise Annee {{$annee-1}}</th>
                 @for($i = 0; $i < count($valeurs); $i++)
                     <td class="text-center py-4 border-b border-gray-300">
                         {{ isset($reprise[0]->{$valeurs[$i]}) ? $reprise[0]->{$valeurs[$i]} : 0 }}
@@ -71,14 +71,14 @@
 
 
                 @foreach($valeurs as $value)
-                    <td class="px-6 py-4 border-b border-gray-300">
+                    <td class="px-6 py-4 border-b border-gray-300 text-center ">
                         {{ $total[0]->{$value} ?? '0' }}
                         @php($totalsum[] = $total[0]->{$value} ?? 0)
                     </td>
                 @endforeach
 
 
-                <td class="px-6 py-4 border-b border-gray-300 ">
+                <td class="px-6 py-4 border-b border-gray-300 text-center">
                     {{ array_sum($totalsum) }}
                 </td>
             </tr>

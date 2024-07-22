@@ -5,6 +5,17 @@
     <form action="/choix" method="POST">
         @csrf
     <div>
+        <label for="typeRegisseur" class="block mb-2 text-3xl text-gray-900 dark:text-white font-bold">Selectionner la commune:</label>
+        <select id="typeRegisseur" name="typeRegisseur"  class="form-select form-select-lg mb-3" aria-label="Large select example">
+            @if (!empty($communes))
+                @foreach($communes as $commune)
+                    <option value="{{$commune}}">{{$commune}}</option>
+                @endforeach
+            @else
+                <option>No commune .</option>
+            @endif
+        </select>
+
         <label for="typeRegisseur" class="block mb-2 text-3xl text-gray-900 dark:text-white font-bold">Selectionner Table d' :</label>
         <select id="typeRegisseur" name="typeRegisseur"  class="form-select form-select-lg mb-3" aria-label="Large select example">
             @if (!empty($typeRegisseur))

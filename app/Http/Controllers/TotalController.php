@@ -17,6 +17,7 @@ class TotalController extends Controller
      */
    public function index()
    {
+       $communes = ['RURALE', 'URBAINE'];
        $annees = [];
        $typeRegisseur = ['approvisionnement', 'versement' ,'chez_tp'];
        for ($i=2023;$i<Carbon::now()->year+1;$i++){
@@ -25,6 +26,7 @@ class TotalController extends Controller
 
        return view('TotalRecap/choix',
            [
+                'communes' => $communes,
                'typeRegisseur' => $typeRegisseur,
                'annees' => $annees
            ]);
@@ -99,6 +101,7 @@ class TotalController extends Controller
                     ->where('annee',$annee-1)
                     ->orderBy('type')
                     ->get();
+
                 if($tableTotal->count()==2)
                 {
                     $table_total['0.5'] += $tableTotal[0]->{'0.5'} - $tableTotal[1]->{'0.5'};
@@ -107,25 +110,27 @@ class TotalController extends Controller
                     $table_total['5'] += $tableTotal[0]->{'5'} - $tableTotal[1]->{'5'};
                     $table_total['50'] += $tableTotal[0]->{'50'} - $tableTotal[1]->{'50'};
                 }
-
-
             }
 
         }
-       // dd($table_total);
+
         foreach ($tableT as $item){
            foreach ($item as $value){
-               $table_total_mois['0.5'] += $value->{'0.5'};
-               $table_total_mois['1'] += $value->{'1'};
-               $table_total_mois['2'] += $value->{'2'};
-               $table_total_mois['5'] += $value->{'5'};
-               $table_total_mois['50'] += $value->{'50'};
+
+               $table_total_mois['0.5'] += $value->{'0.5'}+$table_total['0.5'];
+               $table_total_mois['1'] += $value->{'1'}+$table_total['1'];
+               $table_total_mois['2'] += $value->{'2'}  +$table_total['2'];
+               $table_total_mois['5'] += $value->{'5'}+$table_total['5'];
+               $table_total_mois['50'] += $value->{'50'}+$table_total['50'];
+
            }
 
         }
 
+
         return view('TotalRecap.RecapeTotal',
             [
+                'annee' => $annee,
                 'table_total' => $table_total,
                 'table_total_mois'=>$table_total_mois,
                 'values' => $values,

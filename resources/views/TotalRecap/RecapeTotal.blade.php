@@ -5,10 +5,11 @@
             <div class="text-xl font-bold text-gray-800 mb-4">Tableau de Commune Urbaine : {{$cu_name}}</div>
             <div class="bg-white shadow-md rounded-lg p-6 flex flex-col sm:flex-row sm:justify-between items-center">
                 <div class="font-extrabold text-blue-900 mr-4 mb-4 sm:mb-0">Regisseur de : "{{$name}}"</div>
-                <div class="font-extrabold text-red-500 ml-4 mb-4 sm:mb-0">L'année : {{$annee}}</div>
+
             </div>
         --}}
-        {{$typeRegisseur}}
+        <div class="font-extrabold text-blue-500 ml-4 mb-4 sm:mb-0">  {{ucfirst($typeRegisseur)}} de L'année : {{$annee}}</div>
+
     </x-slot>
 
     <form method="POST" action="#">
@@ -34,14 +35,14 @@
             @endphp
             @if($typeRegisseur=="approvisionnement")
             <tr>
-                <th scope="row" class="text-center">Reprise Annee</th>
+                <th scope="row" class="text-center" style=" color: #fc8181;">Reprise de l'Année Précédente ({{$annee -1}})</th>
                 @foreach($values as $value)
-                    <td class="text-center py-4 border-b border-gray-300">
+                    <td class="text-center py-4 border-b border-gray-300 " style=" color: #fc8181;">
                         {{ isset( $table_total[$value]) ? $table_total[$value] : 0 }}
                     </td>
                 @endforeach
 
-                <td class="px-6 py-4 border-b border-gray-300">{{array_sum($table_total)}}</td>
+                <td class="px-6 py-4 border-b border-gray-300 font-extrabold" style=" color: #ff1a1a;">{{array_sum($table_total)}}</td>
             </tr>
             @endif
             @foreach($table_mois as $mois => $values)

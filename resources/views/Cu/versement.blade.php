@@ -57,14 +57,14 @@
                 @endphp
 
                 @foreach($valeurs as $value)
-                    <td class="px-6 py-4 border-b border-gray-300">
+                    <td class="px-6 py-4 border-b border-gray-300 text-center">
                         {{ $total[0]->{$value} ?? '0' }}
                         @php($totalsum[] = $total[0]->{$value} ?? 0)
                     </td>
                 @endforeach
 
 
-                <td class="px-6 py-4 border-b border-gray-300 ">
+                <td class="px-6 py-4 border-b border-gray-300 text-center ">
                     {{ array_sum($totalsum) }}
                 </td>
             </tr>

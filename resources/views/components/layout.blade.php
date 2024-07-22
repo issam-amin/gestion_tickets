@@ -27,7 +27,7 @@
                             <x-nav-link  href="/" :active="request()->is('/')">Home</x-nav-link>
                             <x-nav-link  href="/Cu" :active="request()->is('Cu')">CU</x-nav-link>
                             <x-nav-link  href="/CR" :active="request()->is('CR')">CR</x-nav-link>
-                            <x-nav-link  href="/Trecap" :active="request()->is('Trecap')" >Recape Total</x-nav-link>
+                            <x-nav-link  href="/commune" :active="request()->is('Trecap')" >Recape Total</x-nav-link>
 
                         </div>
                     </div>
