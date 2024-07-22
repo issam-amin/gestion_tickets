@@ -96,7 +96,7 @@ class TotalController extends Controller
 
                 $tableTotal=DB::table('totals')
                     ->where('regisseur_id',$regi->id)
-                    ->where('annee',$annee)
+                    ->where('annee',$annee-1)
                     ->orderBy('type')
                     ->get();
                 if($tableTotal->count()==2)

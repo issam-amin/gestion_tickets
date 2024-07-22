@@ -26,71 +26,41 @@ class RegisseurController extends Controller
             $regisseur=regisseur::find($request->regisseurs);
         }
         $cuName= $regisseur->cu()->first()->cu_name;
-       //dd( $regisseur->cu()->first()->cu_name);
         $values = [0.5, 1, 2, 5, 50];
         $months = [
             'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
             'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
         ];
-       // dd($request->typeRegi);
+         $annee=$request->anneetab;
+         $idregisseur=$request->regisseurs;
+         $typeregisseur=$request->typeRegi;
         switch ($request->typeRegi) {
             case 'approvisionnement':
-                $donnes=DB::table('a_p_p_r_o_v_i_s_i_o_n_n_e_m_e_n_t_s')
-                    ->where('regisseur_id',$request->regisseurs)
-                    ->where('annee',$request->anneetab)
-                    ->orderBy('id')
-                    ->get();
-                $total=DB::table('totals')
-                    ->where('regisseur_id',$request->regisseurs)
-                    ->where('annee',$request->anneetab)
-                    ->where('type','approvisionnement')
-                    ->orderBy('id')
-                    ->get();
-                $reprise=DB::table('totals')
-                    ->where('regisseur_id',$request->regisseurs)
-                    ->where('annee',$request->anneetab-1)
-                    ->orderBy('id')
-                    ->get();
-                //dd($reprise);
+                $table='a_p_p_r_o_v_i_s_i_o_n_n_e_m_e_n_t_s';
                 break;
             case 'versement':
-                $donnes=DB::table('v_e_r_s_e_m_e_n_t_s')
-                    ->where('regisseur_id',$request->regisseurs)
-                    ->where('annee',$request->anneetab)
-                    ->orderBy('id')
-                    ->get();
-                $total=DB::table('totals')
-                    ->where('regisseur_id',$request->regisseurs)
-                    ->where('annee',$request->anneetab)
-                    ->where('type','versement')
-                    ->orderBy('id')
-                    ->get();
-                $reprise=DB::table('totals')
-                    ->where('regisseur_id',$request->regisseurs)
-                    ->where('annee',$request->anneetab-1)
-                    ->orderBy('id')
-                    ->get();
+                $table='v_e_r_s_e_m_e_n_t_s';
                 break;
             case 'chez_tp':
-                $donnes=DB::table('chez__t_p_s')
-                    ->where('regisseur_id',$request->regisseurs)
-                    ->where('annee',$request->anneetab)
-                    ->orderBy('id')
-                    ->get();
-                $total=DB::table('totals')
-                    ->where('regisseur_id',$request->regisseurs)
-                    ->where('annee',$request->anneetab)
-                    ->where('type','versement')
-                    ->orderBy('id')
-                    ->get();
-                $reprise=DB::table('totals')
-                    ->where('regisseur_id',$request->regisseurs)
-                    ->where('annee',$request->anneetab-1)
-                    ->orderBy('id')
-                    ->get();
+                $table='chez__t_p_s';
                 break;
         }
-
+        $donnes=DB::table($table)
+            ->where('regisseur_id',$idregisseur)
+            ->where('annee',$annee)
+            ->orderBy('id')
+            ->get();
+        $total=DB::table('totals')
+            ->where('regisseur_id',$idregisseur)
+            ->where('annee',$annee)
+            ->where('type',$typeregisseur)
+            ->orderBy('id')
+            ->get();
+        $reprise=DB::table('totals')
+            ->where('regisseur_id',$idregisseur)
+            ->where('annee',$annee-1)
+            ->orderBy('id')
+            ->get();
 
         return view('/cu/'.$request->typeRegi, [
             'IDRegisseur' => $request->regisseurs,
@@ -264,17 +234,36 @@ elseif ($typeRegisseur=='versement'){
     public function show(Request $request, $cu_name)
     {
 
+        $table_total = ['0.5' => 0, '1' => 0, '2' => 0, '5' => 0, '50' => 0];
         $selectedYear = $request->input('anneetab1');
         $values = ['0.5','1', '2', '5', '50'];
         $total_appro = [];
         $total_ver = [];
         $cu = CU::where('cu_name', $cu_name)->first();
-        dd($cu);
         $idregis = $cu->regisseur->pluck('id');
+
+
+        /*$tableTotal=DB::table('totals')
+            ->where('regisseur_id',$id)
+            ->where('annee',$selectedYear)
+            ->orderBy('type')
+            ->get();
+
+        if($tableTotal->count()==2)
+        {
+            $table_total['0.5'] += $tableTotal[0]->{'0.5'} - $tableTotal[1]->{'0.5'};
+            $table_total['1'] += $tableTotal[0]->{'1'} - $tableTotal[1]->{'1'};
+            $table_total['2'] += $tableTotal[0]->{'2'} - $tableTotal[1]->{'2'};
+            $table_total['5'] += $tableTotal[0]->{'5'} - $tableTotal[1]->{'5'};
+            $table_total['50'] += $tableTotal[0]->{'50'} - $tableTotal[1]->{'50'};
+
+        }*/
+
+
 //Approvisionnement
         foreach ($idregis as $id) {
             foreach ($values as $value) {
-                $column = "`" . $value . "`"; // Quote column name
+                $column = "`" . $value . "`";
                 $total_appro[$id][$value] = DB::table('totals')
                     ->where('regisseur_id', $id)
                     ->where('annee', $selectedYear)
@@ -295,7 +284,7 @@ elseif ($typeRegisseur=='versement'){
 // Versement
         foreach ($idregis as $id) {
             foreach ($values as $value) {
-                $column = "`" . $value . "`"; // Quote column name
+                $column = "`" . $value . "`";
                 $total_ver[$id][$value] = DB::table('totals')
                     ->where('regisseur_id', $id)
                     ->where('annee', $selectedYear)
@@ -313,7 +302,22 @@ elseif ($typeRegisseur=='versement'){
             }
             $total_ver['total'][$value] = $total_sum;
         }
+
+        //RESTE
+
+
+
+
+                $table_total['0.5'] += $total_appro['total']['0.5']- $total_ver['total']['0.5'];
+                $table_total['1'] += $total_appro['total']['1'] - $total_ver['total']['1'];
+                $table_total['2'] += $total_appro['total']['2'] - $total_ver['total']['2'];
+                $table_total['5'] += $total_appro['total']['5'] - $total_ver['total']['5'];
+                $table_total['50'] += $total_appro['total']['50'] - $total_ver['total']['50'];
+
+
+
         return view('Cu.totalRecap', [
+                'table_total'=>  $table_total,
             'values' => $values,
             'cu_name' => $cu_name,
             'total_appro' => $total_appro,

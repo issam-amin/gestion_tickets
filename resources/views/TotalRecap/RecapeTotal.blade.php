@@ -32,15 +32,18 @@
             @php
                 $somme = 0;
             @endphp
+            @if($typeRegisseur=="approvisionnement")
             <tr>
                 <th scope="row" class="text-center">Reprise Annee</th>
-                @for($i = 0; $i < count($values); $i++)
+                @foreach($values as $value)
                     <td class="text-center py-4 border-b border-gray-300">
-                        {{ isset($reprise[0]->{$values[$i]}) ? $reprise[0]->{$values[$i]} : 0 }}
+                        {{ isset( $table_total[$value]) ? $table_total[$value] : 0 }}
                     </td>
-                @endfor
-                <td class="px-6 py-4 border-b border-gray-300"></td>
+                @endforeach
+
+                <td class="px-6 py-4 border-b border-gray-300">{{array_sum($table_total)}}</td>
             </tr>
+            @endif
             @foreach($table_mois as $mois => $values)
                 <tr>
                     <th scope="row" class="text-center">{{ $mois }}</th>

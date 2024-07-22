@@ -46,7 +46,7 @@
                 <th scope="row" class="text-center">Reste</th>
                 @foreach($values as $value)
                     <td class="text-center py-4 border-b border-gray-300">
-                        {{ ($total_appro['total'][$value] ?? 0) - ($total_ver['total'][$value]?? 0) }}
+                        {{ ($table_total[$value] ?? 0)  }}
                     </td>
                 @endforeach
             </tr>

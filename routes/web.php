@@ -22,7 +22,7 @@ Route::controller(RegisseurController::class)->group(function (){
 
 });
 Route::controller(TotalController::class)->group(function (){
-    Route::get('/baine','index');
+    Route::get('/urbaine','index');
     Route::get('/Rurale','index');
     Route::post('/Total/{typeRegisseur}/{annee}/{IDRegisseur}', 'store');
     Route::get('/Regisseur/{IDRegisseur}/{annee}', 'show');
