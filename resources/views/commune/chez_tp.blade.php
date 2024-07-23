@@ -1,7 +1,7 @@
 <x-layout>
     <x-slot name="headings">
 
-        <p>Tableau de Commune Urbaine : {{$cu_name}}</p>
+        <p>Tableau de Commune Urbaine : {{$commune_Name}}</p>
         <p class="text-center font-extrabold text-blue-900">Regisseur de :"{{$name}}"</p>
         <p>L'année: {{$annee}}</p>
         <x-button class="bg-blue-500 hover:bg-blue-700 text-black font-bold py-2 px-4 rounded" href="/Regisseur/{{$IDRegisseur}}/{{$annee}}">Voir Recap de chez TP</x-button>
@@ -29,19 +29,23 @@
 
         <tr>
             <th scope="row" class="text-center">Reprise chez Tp de l'année {{$annee-1}}</th>
-            @for($i=0;$i<6;$i++)
+
+            @foreach($values as $value)
                 <td class="px-6 py-4 border-b border-gray-300 ">
 
                 </td>
-            @endfor
+            @endforeach
         </tr>
         <tr>
             <th scope="row" class="text-center">Reprise chez les regisseurs de l'année {{$annee-1}}</th>
-            @for($i=0;$i<6;$i++)
-                <td class="px-6 py-4 border-b border-gray-300 ">
-
+            @foreach($values as $value)
+                <td class="px-6 py-4 border-b border-gray-300 text-center">
+                    {{ isset( $reste[$value]) ? $reste[$value] : 0 }}
                 </td>
-            @endfor
+            @endforeach
+            <td class="px-6 py-4 border-b border-gray-300 text-center">
+                {{ isset( $reste) ? array_sum($reste) : 0 }}
+            </td>
         </tr>
         <tr>
             <th scope="row" class="text-center">Total Des reprises</th>
@@ -92,7 +96,7 @@
         </tbody>
     </table>
         <div class="flex items-center justify-between">
-            <a href="/Cu/{{$cu_name}}" class="text-sm font-semibold leading-6 text-gray-900 hover:text-indigo-600 transition duration-200 ease-in-out">
+            <a href="/commune/{{$commune_Name}}" class="text-sm font-semibold leading-6 text-gray-900 hover:text-indigo-600 transition duration-200 ease-in-out">
                 Cancel
             </a>
             <div>

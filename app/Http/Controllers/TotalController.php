@@ -210,8 +210,7 @@ class TotalController extends Controller
             }
         }
 
-        $commune = regisseur::find($IDRegisseur)->cu()->first();
-        return redirect('/Cu/' . $commune->cu_name);
+
     }
 
 

@@ -2,7 +2,7 @@
     <x-slot name="headings">
 
         <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 flex justify-between">
-            <div class="font-extrabold text-blue-900 mr-4 flex-1">Récape de: "{{$cu_name}}"</div>
+            <div class="font-extrabold text-blue-900 mr-4 flex-1">Récape de: "{{$commune_name}}"</div>
             <div class="font-extrabold text-red-500 ml-4 flex-0.5 text-right">Année : {{$selectedYear}}</div>
         </div>
 

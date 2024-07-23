@@ -1,7 +1,7 @@
 <x-layout>
     <x-slot name="headings">
         <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-            <div class="text-xl font-bold text-gray-800 mb-4">Tableau de Commune Urbaine : {{$cu_name}}</div>
+            <div class="text-xl font-bold text-gray-800 mb-4">Tableau de Commune Urbaine : {{$commune_Name}}</div>
             <div class="bg-white shadow-md rounded-lg p-6 flex flex-col sm:flex-row sm:justify-between items-center">
                 <div class="font-extrabold text-blue-900 mr-4 mb-4 sm:mb-0">Regisseur de : "{{$name}}"</div>
                 <div class="font-extrabold text-red-500 ml-4 mb-4 sm:mb-0">L'année : {{$annee}}</div>
@@ -37,12 +37,14 @@
                     $valeurs = ['0.5', '1', '2', '5', '50'];
                 @endphp
                 <th scope="row" class="text-center">Reprise Annee {{$annee-1}}</th>
-                @for($i = 0; $i < count($valeurs); $i++)
-                    <td class="text-center py-4 border-b border-gray-300">
-                        {{ isset($reprise[0]->{$valeurs[$i]}) ? $reprise[0]->{$valeurs[$i]} : 0 }}
+                @foreach($values as $value)
+                    <td class="px-6 py-4 border-b border-gray-300 text-center">
+                        {{ isset( $reste[$value]) ? $reste[$value] : 0 }}
                     </td>
-                @endfor
-                <td class="px-6 py-4 border-b border-gray-300"></td>
+                @endforeach
+                <td class="px-6 py-4 border-b border-gray-300 text-center">
+                    {{ isset( $reste) ? array_sum($reste) : 0 }}
+                </td>
             </tr>
 
             @php $i = 0; @endphp
@@ -85,7 +87,7 @@
             </tbody>
         </table>
         <div class="flex items-center justify-between">
-            <a href="/Cu/{{$cu_name}}" class="text-sm font-semibold leading-6 text-gray-900 hover:text-indigo-600 transition duration-200 ease-in-out">
+            <a href="/commune/{{$commune_Name}}" class="text-sm font-semibold leading-6 text-gray-900 hover:text-indigo-600 transition duration-200 ease-in-out">
                 Cancel
             </a>
             <div>

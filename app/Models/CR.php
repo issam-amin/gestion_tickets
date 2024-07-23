@@ -4,15 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * @method static select(string $string)
+ */
 class CR extends Model
 {
     use HasFactory;
     protected $guarded = [];
-    public function regisseur(): BelongsTo
+    public function regisseur(): HasOne
     {
-        return $this->belongsTo(regisseur::class);
+        return $this->hasOne(regisseur::class);
     }
 
 }

@@ -1,16 +1,16 @@
 <x-layout>
     <x-slot:headings>
-        Commune Urbaine page
+        Commune Rurale page
     </x-slot:headings>
 <div CLASS="flex justify-content-lg-between">
 
     <div class="dropdown">
         <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Selectionner la commune urbaine
+            Selectionner la commune rurale
         </button>
         <ul class="dropdown-menu dropdown-menu-dark">
-            @foreach($CUS  as $cu)
-                <li><a class="dropdown-item" href="/Cu/{{ $cu['cu_name'] }}">{{$cu->cu_name}}</a></li>
+            @foreach($Communes  as $Commune)
+                <li><a class="dropdown-item" href="/Cr/{{ $Commune['cr_name'] }}">{{$Commune->cr_name}}</a></li>
             @endforeach
         </ul>
     </div>

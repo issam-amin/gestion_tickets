@@ -15,14 +15,11 @@ class regisseur extends Model
     use HasFactory;
     protected $guarded = [];
 
-    public function cu(): BelongsTo
+    public function commune(): BelongsTo
     {
-        return $this->belongsTo(CU::class, 'c_u_id', 'id');
+        return $this->belongsTo(commune::class);
     }
-    public function cr(): BelongsTo
-    {
-        return $this->belongsTo(CU::class);
-    }
+
     public function total(): HasMany
     {
         return $this->HasMany(total::class);

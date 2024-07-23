@@ -16,9 +16,9 @@ class CuController extends Controller
         $cus = CU::select('cu_name')->groupBy('cu_name')->get();
 
 
-            return view('Cu.index',
+            return view('commune.index',
                 [
-                    'CUS'=> $cus
+                    'Communes'=> $cus
                 ]);
     }
 
@@ -49,18 +49,6 @@ class CuController extends Controller
                 'annees' => $annees
             ]);
     }
-    public function tableau($cu_name, $name)
-    {
-        $months = [
-            'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
-            'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
-        ];
 
-        return view('cu.tableau', [
-            'months' => $months,
-            'cu_name' => $cu_name,
-            'name' => $name
-        ]);
-    }
 
 }

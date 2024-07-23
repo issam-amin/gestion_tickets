@@ -1,13 +1,13 @@
 <x-layout>
     <x-slot name="headings">
         <div class="flex items-center justify-between" style="margin-top:20px">
-            <div class="text-blue-500">La Commune Urbaine : {{$nomCom->cu_name}}</div>
+            <div class="text-blue-500">La Commune Urbaine : {{$nomCom->name}}</div>
             <div style="margin-left:20px">
                 <x-button href="/names/create">Create</x-button>
             </div>
         </div>
     </x-slot>
-    <form method="POST" action="/Regisseur" class="max-w-sm mx-auto mt-6 space-y-4">
+    <form method="POST" action="/Regisseur/{{$nomCom->name}}" class="max-w-sm mx-auto mt-6 space-y-4">
         @csrf
         <div class="flex justify-content-around">
         <div >
@@ -53,12 +53,14 @@
 
     </form>
 
-    <form method="POST" action="/show/{{$cu_name}}">
+    <form method="POST" action="/show/{{$nomCom->name}}">
         @csrf
-        <div class="flex items-center justify-content-around flex-column" style="margin-top:50px">
-            <p class="text-3xl dark:text-white font-bold text-blue-500">La Recaps De La Liste Des Regisseurs :</p>
-            <div class="w-25">
-                <label for="anneetab1" class="block mb-2 text-3xl text-gray-500 dark:text-white">Année</label>
+        <div class="flex items-center justify-content-around " style="margin-top:50px">
+            <p class="text-3xl dark:text-white " style="color: #4a5568">La Recaps De La Liste Des Regisseurs l'Année :</p>
+            <div class="flex justify-between">
+{{--
+                <label for="anneetab1" class="block mb-2 text-3xl text-gray-500 dark:text-white"></label>
+--}}
                 <select id="anneetab1" name="anneetab1" class="form-select form-select-lg mb-3" aria-label="Large select example">
                     @if (!empty($annees))
                         @foreach($annees as $annee)
