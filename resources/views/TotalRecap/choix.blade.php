@@ -1,15 +1,15 @@
 <x-layout>
     <x-slot:headings>
-        Choix :
+        Choix de la commune :
     </x-slot:headings>
     <form action="/choix" method="POST">
         @csrf
     <div>
-        <label for="typeRegisseur" class="block mb-2 text-3xl text-gray-900 dark:text-white font-bold">Selectionner la commune:</label>
-        <select id="typeRegisseur" name="typeRegisseur"  class="form-select form-select-lg mb-3" aria-label="Large select example">
+        <label for="region" class="block mb-2 text-3xl text-gray-900 dark:text-white font-bold">Selectionner la commune:</label>
+        <select id="region" name="region"  class="form-select form-select-lg mb-3" aria-label="Large select example">
             @if (!empty($communes))
                 @foreach($communes as $commune)
-                    <option value="{{$commune}}">{{$commune}}</option>
+                    <option value="{{$commune}}">{{strtoupper($commune)}}</option>
                 @endforeach
             @else
                 <option>No commune .</option>
@@ -20,7 +20,7 @@
         <select id="typeRegisseur" name="typeRegisseur"  class="form-select form-select-lg mb-3" aria-label="Large select example">
             @if (!empty($typeRegisseur))
                 @foreach($typeRegisseur as $type)
-                    <option value="{{$type}}">{{$type}}</option>
+                        <option value="{{$type}}">{{strtoupper($type)}}</option>
                 @endforeach
             @else
                 <option>No type found for this CU.</option>

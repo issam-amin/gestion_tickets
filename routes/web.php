@@ -1,8 +1,6 @@
 <?php
 
 use App\Http\Controllers\CommuneController;
-use App\Http\Controllers\CrController;
-use App\Http\Controllers\CuController;
 use App\Http\Controllers\RegisseurController;
 use App\Http\Controllers\TotalController;
 use Illuminate\Support\Facades\Route;

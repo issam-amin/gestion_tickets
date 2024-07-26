@@ -24,73 +24,109 @@ class RegisseurController extends Controller
     public function index(Request $request,$nom): View|Factory|Application
     {
 
-     //  dd($request->all());
         $reste = ['0.5' => 0, '1' => 0, '2' => 0, '5' => 0, '50' => 0];
 
         if (!empty($request->regisseurs)) {
-            $regisseur=regisseur::find($request->regisseurs);
+            $regisseur = regisseur::find($request->regisseurs);
         }
 
-        $commune_Name= $regisseur->commune()->first()->name;
+        $commune_Name = $regisseur->commune()->first()->name;
 
         $values = ['0.5', '1', '2', '5', '50'];
         $months = [
             'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
             'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
         ];
-         $annee=$request->anneetab;
-         $idregisseur=$request->regisseurs;
-         $typeregisseur=$request->typeRegi;
+        $annee = $request->anneetab;
+        $idregisseur = $request->regisseurs;
+        $typeregisseur = $request->typeRegi;
+
         switch ($request->typeRegi) {
             case 'approvisionnement':
-                $table='a_p_p_r_o_v_i_s_i_o_n_n_e_m_e_n_t_s';
+                $table = 'a_p_p_r_o_v_i_s_i_o_n_n_e_m_e_n_t_s';
                 break;
             case 'versement':
-                $table='v_e_r_s_e_m_e_n_t_s';
+                $table = 'v_e_r_s_e_m_e_n_t_s';
                 break;
             case 'chez_tp':
-                $table='chez__t_p_s';
-
+                $table = 'chez__t_p_s';
                 break;
         }
-        $donnes=DB::table($table)
-            ->where('regisseur_id',$idregisseur)
-            ->where('annee',$annee)
-            ->orderBy('id')
-            ->get();
-        $total=DB::table('totals')
-            ->where('regisseur_id',$idregisseur)
-            ->where('annee',$annee)
-            ->where('type',$typeregisseur)
-            ->orderBy('id')
-            ->get();
-        $reprise=DB::table('totals')
-            ->where('regisseur_id',$idregisseur)
-            ->where('annee',$annee-1)
+
+        // La ligne du reste
+        $reprise = DB::table('totals')
+            ->where('regisseur_id', $idregisseur)
+            ->where('annee', $annee - 1)
             ->whereIn('type', ['approvisionnement', 'versement'])
             ->orderBy('id')
             ->get();
-       // dd($reprise[0]->{'type'});
 
-        $reste['0.5'] += ($reprise[0]->{'0.5'} ?? 0) - ($reprise[1]->{'0.5'} ?? 0);
-        $reste['1'] += ($reprise[0]->{'1'} ?? 0) - ($reprise[1]->{'1'} ?? 0);
-        $reste['2'] += ($reprise[0]->{'2'} ?? 0) - ($reprise[1]->{'2'} ?? 0);
-        $reste['5'] += ($reprise[0]->{'5'} ?? 0) - ($reprise[1]->{'5'} ?? 0);
-        $reste['50'] += ($reprise[0]->{'50'} ?? 0) - ($reprise[1]->{'50'} ?? 0);
-//dd($reste);
+        $reste = [
+            '0.5' => 0,
+            '1' => 0,
+            '2' => 0,
+            '5' => 0,
+            '50' => 0,
+        ];
+
+        if (count($reprise) > 1) {
+            $reste['0.5'] += ($reprise[0]->{'0.5'} ?? 0) - ($reprise[1]->{'0.5'} ?? 0);
+            $reste['1'] += ($reprise[0]->{'1'} ?? 0) - ($reprise[1]->{'1'} ?? 0);
+            $reste['2'] += ($reprise[0]->{'2'} ?? 0) - ($reprise[1]->{'2'} ?? 0);
+            $reste['5'] += ($reprise[0]->{'5'} ?? 0) - ($reprise[1]->{'5'} ?? 0);
+            $reste['50'] += ($reprise[0]->{'50'} ?? 0) - ($reprise[1]->{'50'} ?? 0);
+        }
+
+
+        // Colonne des mois pour chaque régisseur
+        $donnes = DB::table($table)
+            ->where('regisseur_id', $idregisseur)
+            ->where('annee', $annee)
+            ->orderBy('id')
+            ->get();
+
+        foreach ($values as $value) {
+            $sums[$value] = $donnes->sum(function($item) use ($value) {
+                return $item->{$value};
+            });
+        }
+        // multipliant chaque valeur par son coefficient
+        foreach ($values as $value){
+            $sums[$value]*=doubleval($value);
+        }
+
+
+
+        // La dernière ligne TOTAL
+        $total_annuel = [
+            '0.5' => 0,
+            '1' => 0,
+            '2' => 0,
+            '5' => 0,
+            '50' => 0
+        ];
+
+        foreach (['0.5', '1', '2', '5', '50'] as $value) {
+            $total_annuel[$value] = ($reste[$value] ?? 0) + ($sums[$value] ?? 0);
+        }
+
+        $valeurtotal = array_sum($total_annuel);
+
 
 
         return view('/commune/'.$request->typeRegi, [
+
             'IDRegisseur' => $request->regisseurs,
             'typeRegisseur' => $request->typeRegi,
             'values' => $values,
             'months' => $months,
+            'annee' => $request->anneetab,
             'name' => $regisseur->name,
             'commune_Name' => $commune_Name,
-            'donnes' => $donnes,
-            'total' => $total,
             'reste' => $reste,
-            'annee' => $request->anneetab,
+            'donnes' => $donnes,
+            'total_annuel' => $total_annuel,
+            'valeurtotal'=>$valeurtotal,
         ]);
     }
 
@@ -108,10 +144,13 @@ class RegisseurController extends Controller
      */
     public function store(Request $request, $typeRegisseur,$annee, $IDRegisseur)
     {
+
         $months = [
             'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
             'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
         ];
+        $values = ['0.5', '1', '2', '5', '50'];
+        $reste = ['0.5' => 0, '1' => 0, '2' => 0, '5' => 0, '50' => 0];
 
 if ($typeRegisseur=='approvisionnement'){
         $check=DB::table('a_p_p_r_o_v_i_s_i_o_n_n_e_m_e_n_t_s')
@@ -132,7 +171,6 @@ if ($typeRegisseur=='approvisionnement'){
                    $var->update([
 
                       'Somme' => $sum,
-
                       '1' => $request[$month->mois]['1'],
                       '2' => $request[$month->mois]['2'],
                       '5' => $request[$month->mois]['5'],
@@ -298,6 +336,8 @@ elseif ($typeRegisseur=='chez_tp'){
     }
 }
 
+
+
         $totalController = new TotalController();
         $totalController->store($request, $typeRegisseur, $annee, $IDRegisseur);
 
@@ -354,7 +394,7 @@ elseif ($typeRegisseur=='chez_tp'){
         foreach ($regis as $regi) {
             foreach ($values as $value) {
                 $column = "`" . $value . "`";
-                $total_ver[$regi->id][$value] = DB::table('totals')
+                $total_ver[$regi->id    ][$value] = DB::table('totals')
                     ->where('regisseur_id', $regi->id)
                     ->where('annee', $selectedYear)
                     ->where('type', 'versement')

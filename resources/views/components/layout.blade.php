@@ -25,8 +25,8 @@
                         <div class="ml-10 flex items-baseline space-x-4">
                             <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
                             <x-nav-link  href="/" :active="request()->is('/')">Home</x-nav-link>
-                            <x-nav-link  href="/commune/urban" :active="request()->is('commune')">CU</x-nav-link>
-                            <x-nav-link  href="/commune/rural" :active="request()->is('Cr')">CR</x-nav-link>
+                            <x-nav-link  href="/commune/urban" :active="request()->is('urban')">CU</x-nav-link>
+                            <x-nav-link  href="/commune/rural" :active="request()->is('rural')">CR</x-nav-link>
                             <x-nav-link  href="/commune" :active="request()->is('Trecap')" >Recape Total</x-nav-link>
 
                         </div>
