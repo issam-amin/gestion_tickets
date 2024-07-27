@@ -94,6 +94,7 @@ class TotalController extends Controller
                     ->orderBy('type')
                     ->get();
 
+
                 if ($tableTotal->count() == 2) {
                     foreach ($values as $value) {
                         $table_total[$value] += $tableTotal[0]->$value - $tableTotal[1]->$value;
@@ -129,10 +130,12 @@ class TotalController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, $typeRegisseur, $annee, $IDRegisseur)
+    public function store($totalAnnuel, $typeRegisseur, $annee, $IDRegisseur)
     {
 
-        $total_annuel=$request->total_annuel;
+
+        $reste = ['0.5' => 0, '1' => 0, '2' => 0, '5' => 0, '50' => 0];
+        $resteTP=['0.5'=>0, '1'=>0, '2'=>0, '5'=>0, '50'=>0];
         $keysToFetch = ['0.5', 1, 2, 5, 50];
         $check = DB::table('totals')
             ->where('regisseur_id', $IDRegisseur)
@@ -140,8 +143,45 @@ class TotalController extends Controller
             ->where('type', $typeRegisseur)
             ->orderBy('id')
             ->get();
+        $reprise = DB::table('totals')
+            ->where('regisseur_id', $IDRegisseur)
+            ->where('annee', $annee - 1)
+            ->whereIn('type', ['approvisionnement', 'versement'])
+            ->orderBy('id')
+            ->get();
 
+        if ($reprise->count() > 1) {
+            $reste['0.5'] += ($reprise[0]->{'0.5'} ?? 0) - ($reprise[1]->{'0.5'} ?? 0);
+            $reste['1'] += ($reprise[0]->{'1'} ?? 0) - ($reprise[1]->{'1'} ?? 0);
+            $reste['2'] += ($reprise[0]->{'2'} ?? 0) - ($reprise[1]->{'2'} ?? 0);
+            $reste['5'] += ($reprise[0]->{'5'} ?? 0) - ($reprise[1]->{'5'} ?? 0);
+            $reste['50'] += ($reprise[0]->{'50'} ?? 0) - ($reprise[1]->{'50'} ?? 0);
+        }
+
+        if ($typeRegisseur == 'chez_tp') {
+
+            $totalTP=DB::table('totals')
+                ->where('regisseur_id', $IDRegisseur)
+                ->where('annee', $annee-1)
+                ->where('type','chez_tp')
+                ->orderBy('id')
+                ->get();
+
+            $totalAPP=DB::table('totals')
+                ->where('regisseur_id', $IDRegisseur)
+                ->where('annee', $annee-1)
+                ->where('type','approvisionnement')
+                ->orderBy('id')
+                ->get();
+
+
+            $values = ['0.5', '1', '2', '5', '50'];
+            foreach ($values as $value) {
+                $resteTP[$value] += $totalTP->first()->{$value} ?? 0-$totalAPP->first()->{$value} ?? 0;
+            }
+        }
         if ($check->isEmpty()) {
+
             $var = total::create([
                 'type' => $typeRegisseur,
                 'annee' => $annee,
@@ -149,7 +189,7 @@ class TotalController extends Controller
             ]);
 
             foreach ($keysToFetch as $key) {
-                $newValue = $total_annuel[$key];
+                $newValue = $totalAnnuel[$key]+$reste[$key]+$resteTP[$key];
                 $varId = $var->id;
                 $sql = "UPDATE `totals` SET `$key` = ?, `updated_at` = ? WHERE `id` = ?";
                 DB::statement($sql, [$newValue, now(), $varId]);
@@ -164,7 +204,7 @@ class TotalController extends Controller
                 ]);
 
                 foreach ($keysToFetch as $key) {
-                    $newValue = $total_annuel[$key];
+                    $newValue = $totalAnnuel[$key]+$reste[$key]+$resteTP[$key];
                     $varId = $var->id;
                     $sql = "UPDATE `totals` SET `$key` = ?, `updated_at` = ? WHERE `id` = ?";
                     DB::statement($sql, [$newValue, now(), $varId]);
@@ -182,7 +222,8 @@ class TotalController extends Controller
     public function show( $id,  $annee)
     {
         $regisseur=regisseur::find($id);
-
+        $approv=['0.5'=>0, '1'=>0, '2'=>0, '5'=>0, '50'=>0];
+        $versement=['0.5'=>0, '1'=>0, '2'=>0, '5'=>0, '50'=>0];
         $values = ['0.5', '1', '2', '5', '50'];
         $QUE = DB::table('totals')
             ->where('regisseur_id', $id)
@@ -200,6 +241,48 @@ class TotalController extends Controller
         ]);
     }
 
+    public function resteTP($id,$annee,$name)
+    {
+        $totalTP=DB::table('totals')
+            ->where('regisseur_id', $id)
+            ->where('annee', $annee)
+            ->where('type','chez_tp')
+            ->orderBy('id')
+            ->get();
+
+        $totalAPP=DB::table('totals')
+            ->where('regisseur_id', $id)
+            ->where('annee', $annee)
+            ->where('type','approvisionnement')
+            ->orderBy('id')
+            ->get();
+
+        $resteTP=['0.5'=>0, '1'=>0, '2'=>0, '5'=>0, '50'=>0];
+        $values = ['0.5', '1', '2', '5', '50'];
+        $sumTP=0;
+        $sumAPP=0;
+
+
+            foreach ($values as $value) {
+                $sumAPP += $totalAPP->first()->{$value} ?? 0;
+                $sumTP+= $totalTP->first()->{$value} ?? 0;
+                $resteTP[$value] += $totalTP->first()->{$value} ?? 0-$totalAPP->first()->{$value} ?? 0;
+            }
+
+
+        return view('commune.TpReste',[
+
+            'name'=>$name,
+            'annee'=>$annee,
+            'resteTP'=>$resteTP,
+            'sumTP'=>$sumTP,
+            'chezTp'=>$totalTP,
+            'sumREG'=>$sumAPP,
+             'chezREG'=>$totalAPP,
+            'values'=>$values,
+            ]
+        );
+    }
     /**
      * Show the form for editing the specified resource.
      */

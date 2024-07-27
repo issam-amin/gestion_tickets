@@ -25,7 +25,7 @@ class RegisseurController extends Controller
     {
 
         $reste = ['0.5' => 0, '1' => 0, '2' => 0, '5' => 0, '50' => 0];
-
+        $resteTP=['0.5'=>0, '1'=>0, '2'=>0, '5'=>0, '50'=>0];
         if (!empty($request->regisseurs)) {
             $regisseur = regisseur::find($request->regisseurs);
         }
@@ -53,7 +53,6 @@ class RegisseurController extends Controller
                 break;
         }
 
-        // La ligne du reste
         $reprise = DB::table('totals')
             ->where('regisseur_id', $idregisseur)
             ->where('annee', $annee - 1)
@@ -61,20 +60,36 @@ class RegisseurController extends Controller
             ->orderBy('id')
             ->get();
 
-        $reste = [
-            '0.5' => 0,
-            '1' => 0,
-            '2' => 0,
-            '5' => 0,
-            '50' => 0,
-        ];
-
-        if (count($reprise) > 1) {
+        if ($reprise->count() > 1) {
             $reste['0.5'] += ($reprise[0]->{'0.5'} ?? 0) - ($reprise[1]->{'0.5'} ?? 0);
             $reste['1'] += ($reprise[0]->{'1'} ?? 0) - ($reprise[1]->{'1'} ?? 0);
             $reste['2'] += ($reprise[0]->{'2'} ?? 0) - ($reprise[1]->{'2'} ?? 0);
             $reste['5'] += ($reprise[0]->{'5'} ?? 0) - ($reprise[1]->{'5'} ?? 0);
             $reste['50'] += ($reprise[0]->{'50'} ?? 0) - ($reprise[1]->{'50'} ?? 0);
+        }
+
+
+
+        if ($request->typeRegi == 'chez_tp') {
+            $totalTP=DB::table('totals')
+                ->where('regisseur_id', $idregisseur)
+                ->where('annee', $annee-1)
+                ->where('type','chez_tp')
+                ->orderBy('id')
+                ->get();
+
+            $totalAPP=DB::table('totals')
+                ->where('regisseur_id', $idregisseur)
+                ->where('annee', $annee-1)
+                ->where('type','approvisionnement')
+                ->orderBy('id')
+                ->get();
+
+            $resteTP=['0.5'=>0, '1'=>0, '2'=>0, '5'=>0, '50'=>0];
+            $values = ['0.5', '1', '2', '5', '50'];
+            foreach ($values as $value) {
+                $resteTP[$value] += $totalTP->first()->{$value} ?? 0-$totalAPP->first()->{$value} ?? 0;
+            }
         }
 
 
@@ -94,9 +109,6 @@ class RegisseurController extends Controller
         foreach ($values as $value){
             $sums[$value]*=doubleval($value);
         }
-
-
-
         // La dernière ligne TOTAL
         $total_annuel = [
             '0.5' => 0,
@@ -107,11 +119,12 @@ class RegisseurController extends Controller
         ];
 
         foreach (['0.5', '1', '2', '5', '50'] as $value) {
-            $total_annuel[$value] = ($reste[$value] ?? 0) + ($sums[$value] ?? 0);
+            $total_annuel[$value] = ($reste[$value] ?? 0) + ($sums[$value] ?? 0) + ($resteTP[$value] ?? 0);
         }
 
         $valeurtotal = array_sum($total_annuel);
 
+       // dd($total_annuel);
 
 
         return view('/commune/'.$request->typeRegi, [
@@ -124,6 +137,7 @@ class RegisseurController extends Controller
             'name' => $regisseur->name,
             'commune_Name' => $commune_Name,
             'reste' => $reste,
+            'resteTP' => $resteTP,
             'donnes' => $donnes,
             'total_annuel' => $total_annuel,
             'valeurtotal'=>$valeurtotal,
@@ -144,7 +158,7 @@ class RegisseurController extends Controller
      */
     public function store(Request $request, $typeRegisseur,$annee, $IDRegisseur)
     {
-
+        $totalAnnuel= ['0.5' => 0, '1' => 0, '2' => 0, '5' => 0, '50' => 0];
         $months = [
             'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
             'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
@@ -152,194 +166,95 @@ class RegisseurController extends Controller
         $values = ['0.5', '1', '2', '5', '50'];
         $reste = ['0.5' => 0, '1' => 0, '2' => 0, '5' => 0, '50' => 0];
 
-if ($typeRegisseur=='approvisionnement'){
-        $check=DB::table('a_p_p_r_o_v_i_s_i_o_n_n_e_m_e_n_t_s')
-            ->where('regisseur_id',$IDRegisseur)
-            ->where('annee',$annee)
-            ->orderBy('id')
-            ->get();
-        if($check->count()!=0 ){
-            foreach ($check as $month) {
-                $sum=0;
-                foreach ($request[$month->mois] as $coeff => $value) {
-                    $sum += doubleval($value)*doubleval($coeff);
+        $table = '';
+        $model = null;
+
+        if ($typeRegisseur == 'approvisionnement') {
+            $table = 'a_p_p_r_o_v_i_s_i_o_n_n_e_m_e_n_t_s';
+            $model = new APPROVISIONNEMENT();
+        } elseif ($typeRegisseur == 'versement') {
+            $table = 'v_e_r_s_e_m_e_n_t_s';
+            $model = new VERSEMENT();
+        } elseif ($typeRegisseur == 'chez_tp') {
+            $table = 'chez__t_p_s';
+            $model = new Chez_TP();
+        }
+
+        if ($table && $model) {
+            $check = DB::table($table)
+                ->where('regisseur_id', $IDRegisseur)
+                ->where('annee', $annee)
+                ->orderBy('id')
+                ->get();
+
+            if ($check->count() != 0) {
+                foreach ($check as $month) {
+                    $sum = 0;
+                    foreach ($request[$month->mois] as $coeff => $value) {
+                        $sum += doubleval($value) * doubleval($coeff);
+
+                    }
+                    $sums[$month->mois] = $sum;
+
+                    $totalAnnuel['0.5'] += $request[$month->mois]['0.5']*0.5;
+                    $totalAnnuel['1'] += $request[$month->mois]['1']*1;
+                    $totalAnnuel['2'] += $request[$month->mois]['2']*2;
+                    $totalAnnuel['5'] += $request[$month->mois]['5']*5;
+                    $totalAnnuel['50'] += $request[$month->mois]['50']*50;
+
+                    $var = $model::find($month->id);
+                    $var->update([
+                        'Somme' => $sum,
+                        '1' => $request[$month->mois]['1'],
+                        '2' => $request[$month->mois]['2'],
+                        '5' => $request[$month->mois]['5'],
+                        '50' => $request[$month->mois]['50'],
+                    ]);
+
+                    $racho = '0.5';
+                    $newValue = $request[$month->mois][$racho];
+                    $varId = $var->id;
+                    $sql = "UPDATE $table SET `$racho` = ?, `updated_at` = ? WHERE `id` = ?";
+                    DB::statement($sql, [$newValue, now(), $varId]);
                 }
-               // dd($sum);
-                $sums[$month->mois] = $sum;
+            } else {
+                foreach ($months as $month) {
+                    $sum = 0;
+                    foreach ($request[$month] as $coeff => $value) {
+                        $sum += doubleval($value) * doubleval($coeff);
+                    }
+                    $sums[$month] = $sum;
 
-               $var= APPROVISIONNEMENT::find($month->id) ;
-                   $var->update([
+                    $totalAnnuel['0.5'] += $request[$month]['0.5']*0.5;
+                    $totalAnnuel['1'] += $request[$month]['1']*1;
+                    $totalAnnuel['2'] += $request[$month]['2']*2;
+                    $totalAnnuel['5'] += $request[$month]['5']*5;
+                    $totalAnnuel['50'] += $request[$month]['50']*50;
 
-                      'Somme' => $sum,
-                      '1' => $request[$month->mois]['1'],
-                      '2' => $request[$month->mois]['2'],
-                      '5' => $request[$month->mois]['5'],
-                      '50' => $request[$month->mois]['50'],
+                    $var = $model::create([
+                        'mois' => $month,
+                        'annee' => $annee,
+                        'Somme' => $sum,
+                        '1' => $request[$month]['1'],
+                        '2' => $request[$month]['2'],
+                        '5' => $request[$month]['5'],
+                        '50' => $request[$month]['50'],
+                        'regisseur_id' => $IDRegisseur,
+                    ]);
 
-                  ]);
-                $racho = '0.5';
-                $newValue = $request[$month->mois][$racho];
-                $varId = $var->id;
-                $sql = "UPDATE `a_p_p_r_o_v_i_s_i_o_n_n_e_m_e_n_t_s` SET `$racho` = ?, `updated_at` = ? WHERE `id` = ?";
-                DB::statement($sql, [$newValue, now(), $varId]);
-            }
-        }
-        else{
-            foreach ($months as $month) {
-                $sum=0;
-                foreach ($request[$month] as $coeff => $value) {
-                    $sum += doubleval($value)*doubleval($coeff);
+                    $racho = '0.5';
+                    $newValue = $request[$month][$racho];
+                    $varId = $var->id;
+                    $sql = "UPDATE $table SET `$racho` = ?, `updated_at` = ? WHERE `id` = ?";
+                    DB::statement($sql, [$newValue, now(), $varId]);
                 }
-                $sums[$month] = $sum;
-
-               $var= Approvisionnement::create([
-                    'mois' => $month,
-                    'annee' => $annee,
-                    'Somme' => $sum,
-
-                    '1' => $request[$month]['1'],
-                    '2' => $request[$month]['2'],
-                    '5' => $request[$month]['5'],
-                    '50' => $request[$month]['50'],
-                    'regisseur_id' => $IDRegisseur,
-                ]);
-                $racho = '0.5';
-                $newValue = $request[$month][$racho];
-                $varId = $var->id;
-                $sql = "UPDATE `a_p_p_r_o_v_i_s_i_o_n_n_e_m_e_n_t_s` SET `$racho` = ?, `updated_at` = ? WHERE `id` = ?";
-                DB::statement($sql, [$newValue, now(), $varId]);
-
-
             }
         }
-}
-elseif ($typeRegisseur=='versement'){
-    $check=DB::table('v_e_r_s_e_m_e_n_t_s')
-        ->where('regisseur_id',$IDRegisseur)
-        ->where('annee',$annee)
-        ->orderBy('id')
-        ->get();
-    if($check->count()!=0 ){
-        foreach ($check as $month) {
-            $sum=0;
-            foreach ($request[$month->mois] as $coeff => $value) {
-                $sum += doubleval($value)*doubleval($coeff);
-            }
-            // dd($sum);
-            $sums[$month->mois] = $sum;
-
-            $var= VERSEMENT::find($month->id) ;
-            $var->update([
-
-                'Somme' => $sum,
-
-                '1' => $request[$month->mois]['1'],
-                '2' => $request[$month->mois]['2'],
-                '5' => $request[$month->mois]['5'],
-                '50' => $request[$month->mois]['50'],
-
-            ]);
-            $racho = '0.5';
-            $newValue = $request[$month->mois][$racho];
-            $varId = $var->id;
-            $sql = "UPDATE `v_e_r_s_e_m_e_n_t_s` SET `$racho` = ?, `updated_at` = ? WHERE `id` = ?";
-            DB::statement($sql, [$newValue, now(), $varId]);
-        }
-    }
-    else{
-        foreach ($months as $month) {
-            $sum=0;
-            foreach ($request[$month] as $coeff => $value) {
-                $sum += doubleval($value)*doubleval($coeff);
-            }
-            $sums[$month] = $sum;
-
-            $var= VERSEMENT::create([
-                'mois' => $month,
-                'annee' => $annee,
-                'Somme' => $sum,
-                '1' => $request[$month]['1'],
-                '2' => $request[$month]['2'],
-                '5' => $request[$month]['5'],
-                '50' => $request[$month]['50'],
-                'regisseur_id' => $IDRegisseur,
-            ]);
-            $racho = '0.5';
-            $newValue = $request[$month][$racho];
-            $varId = $var->id;
-            $sql = "UPDATE `v_e_r_s_e_m_e_n_t_s` SET `$racho` = ?, `updated_at` = ? WHERE `id` = ?";
-            DB::statement($sql, [$newValue, now(), $varId]);
-
-
-        }
-    }
-}
-elseif ($typeRegisseur=='chez_tp'){
-    $check=DB::table('chez__t_p_s')
-        ->where('regisseur_id',$IDRegisseur)
-        ->where('annee',$annee)
-        ->orderBy('id')
-        ->get();
-    if($check->count()!=0 ){
-        foreach ($check as $month) {
-            $sum=0;
-            foreach ($request[$month->mois] as $coeff => $value) {
-                $sum += doubleval($value)*doubleval($coeff);
-            }
-            // dd($sum);
-            $sums[$month->mois] = $sum;
-
-            $var= Chez_TP::find($month->id) ;
-            $var->update([
-
-                'Somme' => $sum,
-
-                '1' => $request[$month->mois]['1'],
-                '2' => $request[$month->mois]['2'],
-                '5' => $request[$month->mois]['5'],
-                '50' => $request[$month->mois]['50'],
-
-            ]);
-            $racho = '0.5';
-            $newValue = $request[$month->mois][$racho];
-            $varId = $var->id;
-            $sql = "UPDATE `chez__t_p_s` SET `$racho` = ?, `updated_at` = ? WHERE `id` = ?";
-            DB::statement($sql, [$newValue, now(), $varId]);
-        }
-    }
-    else{
-        foreach ($months as $month) {
-            $sum=0;
-            foreach ($request[$month] as $coeff => $value) {
-                $sum += doubleval($value)*doubleval($coeff);
-            }
-            $sums[$month] = $sum;
-
-            $var= Chez_TP::create([
-                'mois' => $month,
-                'annee' => $annee,
-                'Somme' => $sum,
-                '1' => $request[$month]['1'],
-                '2' => $request[$month]['2'],
-                '5' => $request[$month]['5'],
-                '50' => $request[$month]['50'],
-                'regisseur_id' => $IDRegisseur,
-            ]);
-            $racho = '0.5';
-            $newValue = $request[$month][$racho];
-            $varId = $var->id;
-            $sql = "UPDATE `chez__t_p_s` SET `$racho` = ?, `updated_at` = ? WHERE `id` = ?";
-            DB::statement($sql, [$newValue, now(), $varId]);
-
-
-        }
-    }
-}
 
 
 
         $totalController = new TotalController();
-        $totalController->store($request, $typeRegisseur, $annee, $IDRegisseur);
+        $totalController->store($totalAnnuel, $typeRegisseur, $annee, $IDRegisseur);
 
         $commune=regisseur::find($IDRegisseur)->commune()->first();
         return redirect('/commune/'.$commune->region);
@@ -362,11 +277,6 @@ elseif ($typeRegisseur=='chez_tp'){
         $total_ver = [];
         $commune = commune::where('name', $name)->first();
         $regis=$commune->regisseurs()->get();
-
-
-
-
-
 
 //Approvisionnement
         foreach ($regis as $regi) {

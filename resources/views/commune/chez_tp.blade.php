@@ -4,7 +4,7 @@
         <p>Tableau de Commune Urbaine : {{$commune_Name}}</p>
         <p class="text-center font-extrabold text-blue-900">Regisseur de :"{{$name}}"</p>
         <p>L'année: {{$annee}}</p>
-        <x-button class="bg-blue-500 hover:bg-blue-700 text-black font-bold py-2 px-4 rounded" href="/Regisseur/{{$IDRegisseur}}/{{$annee}}">Voir Recap de chez TP</x-button>
+        <x-button class="bg-blue-500 hover:bg-blue-700 text-black font-bold py-2 px-4 rounded" href="/Regisseur/chezTp/{{$IDRegisseur}}/{{$annee}}/{{$name}}">Voir Recap de chez TP</x-button>
     </x-slot>
     <form method="POST" action="/{{$typeRegisseur}}/{{$annee}}/{{$IDRegisseur}}">
         @csrf
@@ -28,13 +28,16 @@
         <tbody>
 
         <tr>
-            <th scope="row" class="text-center">Reprise chez Tp de l'année {{$annee-1}}</th>
+            <th scope="row" class="text-center">Reprise chez Tp de l'année {{$annee-1}}<br>(Reste de l'année dernière)</th>
 
             @foreach($values as $value)
-                <td class="px-6 py-4 border-b border-gray-300 ">
-
+                <td class="px-6 py-4 border-b border-gray-300 text-center">
+                    {{$resteTP[$value]}}
                 </td>
             @endforeach
+            <td class="px-6 py-4 border-b border-gray-300 text-center">
+                {{ isset( $resteTP) ? array_sum($resteTP) : 0 }}
+            </td>
         </tr>
         <tr>
             <th scope="row" class="text-center">Reprise chez les regisseurs de l'année {{$annee-1}}</th>
@@ -49,11 +52,14 @@
         </tr>
         <tr>
             <th scope="row" class="text-center">Total Des reprises</th>
-            @for($i=0;$i<6;$i++)
-                <td class="px-6 py-4 border-b border-gray-300 ">
-
+            @foreach($values as $value)
+                <td class="px-6 py-4 border-b border-gray-300 text-center">
+                    {{ isset( $reste[$value]) ? $reste[$value]+$resteTP[$value] : 0 }}
                 </td>
-            @endfor
+            @endforeach
+            <td class="px-6 py-4 border-b border-gray-300 text-center">
+                {{ isset( $resteTP) ? array_sum($reste)+ array_sum($resteTP) : 0 }}
+            </td>
         </tr>
 
         @php $i = 0; @endphp
@@ -78,19 +84,15 @@
 
         <tr>
             <th scope="row" class="text-center">TOTAL</th>
-
-
-
             @foreach($valeurs as $value)
-                <td class="px-6 py-4 border-b border-gray-300 text-center ">
-                    {{ $total[0]->{$value} ?? '0' }}
-                    @php($totalsum[] = $total[0]->{$value} ?? 0)
+                <td class="px-6 py-4 border-b border-gray-300 text-center">
+                    {{ $total_annuel[$value] ?? '0' }}
                 </td>
+                <input type="hidden" name="total_annuel[{{ $value }}]" value="{{ $total_annuel[$value] ?? '0' }}">
             @endforeach
 
-
             <td class="px-6 py-4 border-b border-gray-300 text-center">
-                {{ array_sum($totalsum) }}
+                {{ $valeurtotal ?? 0}}
             </td>
         </tr>
         </tbody>
