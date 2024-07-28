@@ -86,9 +86,9 @@
             <th scope="row" class="text-center">TOTAL</th>
             @foreach($valeurs as $value)
                 <td class="px-6 py-4 border-b border-gray-300 text-center">
-                    {{ $total_annuel[$value] ?? '0' }}
+                    {{ $total_annuel->{$value}  ?? '0' }}
                 </td>
-                <input type="hidden" name="total_annuel[{{ $value }}]" value="{{ $total_annuel[$value] ?? '0' }}">
+                <input type="hidden" name="total_annuel[{{ $value }}]" value="{{ $total_annuel ->{$value} ?? '0' }}">
             @endforeach
 
             <td class="px-6 py-4 border-b border-gray-300 text-center">

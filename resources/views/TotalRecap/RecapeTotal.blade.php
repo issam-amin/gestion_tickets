@@ -33,7 +33,16 @@
             @php
                 $somme = 0;
             @endphp
-            @if($typeRegisseur=="approvisionnement")
+            @if($typeRegisseur=="chez_tp")
+                <th scope="row" class="text-center" style=" color: #fc8181;">Reprise TP ({{$annee -1}})</th>
+                @foreach($values as $value)
+                    <td class="text-center py-4 border-b border-gray-300 " style=" color: #fc8181;">
+                        {{ isset( $resteTP[$value]) ? $resteTP[$value] : 0 }}
+                    </td>
+                @endforeach
+                <td class="px-6 py-4 border-b border-gray-300 font-extrabold" style=" color: #ff1a1a;">{{array_sum($resteTP)}}</td>
+            @endif
+            @if($typeRegisseur=="approvisionnement" || $typeRegisseur=="chez_tp")
             <tr>
                 <th scope="row" class="text-center" style=" color: #fc8181;">Reprise de l'Année Précédente ({{$annee -1}})</th>
                 @foreach($values as $value)

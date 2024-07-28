@@ -43,7 +43,9 @@ class TotalController extends Controller
         ], array_fill_keys($values, 0));
 
         $table_total_mois = array_fill_keys($values, 0);
-        $table_total = array_fill_keys($values, 0);
+        $reste = array_fill_keys($values, 0);
+        $resteTP = array_fill_keys($values, 0);
+
 
         switch ($request->typeRegisseur) {
             case 'approvisionnement':
@@ -91,29 +93,46 @@ class TotalController extends Controller
                 $tableTotal = DB::table('totals')
                     ->where('regisseur_id', $regi->id)
                     ->where('annee', $annee - 1)
+                    ->whereIn('type', ['approvisionnement', 'versement'])
                     ->orderBy('type')
                     ->get();
 
+                if ($request->typeRegisseur == 'chez_tp') {
+                    $tableTotalTP = DB::table('totals')
+                        ->where('regisseur_id', $regi->id)
+                        ->where('annee', $annee - 1)
+                        ->whereIn('type', ['approvisionnement', 'chez_tp'])
+                        ->orderBy('type')
+                        ->get();
 
-                if ($tableTotal->count() == 2) {
-                    foreach ($values as $value) {
-                        $table_total[$value] += $tableTotal[0]->$value - $tableTotal[1]->$value;
+                    if ($tableTotalTP->count() == 2 ) {
+                        foreach ($values as $value) {
+                            $resteTP[$value] += $tableTotalTP[1]->$value - $tableTotalTP[0]->$value;
+                        }
                     }
                 }
+                if ($tableTotal->count() == 2) {
+                    foreach ($values as $value) {
+                        $reste[$value] += $tableTotal[0]->$value - $tableTotal[1]->$value;
+                    }
+                }
+
             }
         }
 
         foreach ($tableT as $item) {
             foreach ($item as $value) {
                 foreach ($values as $val) {
-                    $table_total_mois[$val] += $value->$val + $table_total[$val];
+                    $table_total_mois[$val] += $value->$val;
                 }
             }
         }
 
+
         return view('TotalRecap.RecapeTotal', [
             'annee' => $annee,
-            'table_total' => $table_total,
+            'table_total' => $reste,
+            'resteTP' => $resteTP,
             'table_total_mois' => $table_total_mois,
             'values' => $values,
             'typeRegisseur' => $typeRegisseur,
@@ -177,7 +196,7 @@ class TotalController extends Controller
 
             $values = ['0.5', '1', '2', '5', '50'];
             foreach ($values as $value) {
-                $resteTP[$value] += $totalTP->first()->{$value} ?? 0-$totalAPP->first()->{$value} ?? 0;
+                $resteTP[$value] += ($totalTP->first()->{$value} ?? 0)-($totalAPP->first()->{$value} ?? 0);
             }
         }
         if ($check->isEmpty()) {

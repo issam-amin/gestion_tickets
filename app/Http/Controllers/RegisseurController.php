@@ -87,10 +87,12 @@ class RegisseurController extends Controller
 
             $resteTP=['0.5'=>0, '1'=>0, '2'=>0, '5'=>0, '50'=>0];
             $values = ['0.5', '1', '2', '5', '50'];
+
             foreach ($values as $value) {
-                $resteTP[$value] += $totalTP->first()->{$value} ?? 0-$totalAPP->first()->{$value} ?? 0;
+                $resteTP[$value] +=( $totalTP[0]->{$value} ?? 0 )-( $totalAPP[0]->{$value} ?? 0);
             }
         }
+
 
 
         // Colonne des mois pour chaque régisseur
@@ -100,7 +102,20 @@ class RegisseurController extends Controller
             ->orderBy('id')
             ->get();
 
-        foreach ($values as $value) {
+        $total_annuel=DB::table('totals')
+            ->where('regisseur_id', $idregisseur)
+            ->where('annee', $annee)
+            ->where('type', $typeregisseur)
+            ->orderBy('id')
+            ->first();
+        $valeurtotal=0;
+        if(!empty($total_annuel)){
+            foreach ($values as $value) {
+                $valeurtotal += $total_annuel->{$value};
+            }
+        }
+       // dd($valeurtotal);
+        /*foreach ($values as $value) {
             $sums[$value] = $donnes->sum(function($item) use ($value) {
                 return $item->{$value};
             });
@@ -120,9 +135,9 @@ class RegisseurController extends Controller
 
         foreach (['0.5', '1', '2', '5', '50'] as $value) {
             $total_annuel[$value] = ($reste[$value] ?? 0) + ($sums[$value] ?? 0) + ($resteTP[$value] ?? 0);
-        }
+        }*/
 
-        $valeurtotal = array_sum($total_annuel);
+
 
        // dd($total_annuel);
 
