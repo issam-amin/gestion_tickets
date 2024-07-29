@@ -24,15 +24,15 @@ class RegisseurController extends Controller
     public function index(Request $request,$nom): View|Factory|Application
     {
 
-        $reste = ['0.5' => 0, '1' => 0, '2' => 0, '5' => 0, '50' => 0];
-        $resteTP=['0.5'=>0, '1'=>0, '2'=>0, '5'=>0, '50'=>0];
+        $sommeAP = 0;
+        $sommeTP = 0;
         if (!empty($request->regisseurs)) {
             $regisseur = regisseur::find($request->regisseurs);
         }
 
         $commune_Name = $regisseur->commune()->first()->name;
 
-        $values = ['0.5', '1', '2', '5', '50'];
+        $values = ['0.5', '1', '5', '2', '50'];
         $months = [
             'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
             'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
@@ -53,43 +53,33 @@ class RegisseurController extends Controller
                 break;
         }
 
-        $reprise = DB::table('totals')
+        $repriseAPP = DB::table('recaps')
             ->where('regisseur_id', $idregisseur)
             ->where('annee', $annee - 1)
-            ->whereIn('type', ['approvisionnement', 'versement'])
+            ->whereIn('type', ['approvisionnement'])
             ->orderBy('id')
             ->get();
 
-        if ($reprise->count() > 1) {
-            $reste['0.5'] += ($reprise[0]->{'0.5'} ?? 0) - ($reprise[1]->{'0.5'} ?? 0);
-            $reste['1'] += ($reprise[0]->{'1'} ?? 0) - ($reprise[1]->{'1'} ?? 0);
-            $reste['2'] += ($reprise[0]->{'2'} ?? 0) - ($reprise[1]->{'2'} ?? 0);
-            $reste['5'] += ($reprise[0]->{'5'} ?? 0) - ($reprise[1]->{'5'} ?? 0);
-            $reste['50'] += ($reprise[0]->{'50'} ?? 0) - ($reprise[1]->{'50'} ?? 0);
+        if ($repriseAPP->isNotEmpty()) {
+            foreach ($values as $key) {
+                $sommeAP += $repriseAPP[0]->{$key} ;
+            }
         }
 
 
 
+        $repriseTp =collect();
         if ($request->typeRegi == 'chez_tp') {
-            $totalTP=DB::table('totals')
+            $repriseTp = DB::table('recaps')
                 ->where('regisseur_id', $idregisseur)
-                ->where('annee', $annee-1)
-                ->where('type','chez_tp')
+                ->where('annee', $annee - 1)
+                ->whereIn('type', ['chez_tp'])
                 ->orderBy('id')
                 ->get();
-
-            $totalAPP=DB::table('totals')
-                ->where('regisseur_id', $idregisseur)
-                ->where('annee', $annee-1)
-                ->where('type','approvisionnement')
-                ->orderBy('id')
-                ->get();
-
-            $resteTP=['0.5'=>0, '1'=>0, '2'=>0, '5'=>0, '50'=>0];
-            $values = ['0.5', '1', '2', '5', '50'];
-
-            foreach ($values as $value) {
-                $resteTP[$value] +=( $totalTP[0]->{$value} ?? 0 )-( $totalAPP[0]->{$value} ?? 0);
+            if ($repriseTp->isNotEmpty()) {
+                foreach ($values as $key) {
+                    $sommeTP += $repriseTp[0]->{$key} ;
+                }
             }
         }
 
@@ -114,32 +104,6 @@ class RegisseurController extends Controller
                 $valeurtotal += $total_annuel->{$value};
             }
         }
-       // dd($valeurtotal);
-        /*foreach ($values as $value) {
-            $sums[$value] = $donnes->sum(function($item) use ($value) {
-                return $item->{$value};
-            });
-        }
-        // multipliant chaque valeur par son coefficient
-        foreach ($values as $value){
-            $sums[$value]*=doubleval($value);
-        }
-        // La dernière ligne TOTAL
-        $total_annuel = [
-            '0.5' => 0,
-            '1' => 0,
-            '2' => 0,
-            '5' => 0,
-            '50' => 0
-        ];
-
-        foreach (['0.5', '1', '2', '5', '50'] as $value) {
-            $total_annuel[$value] = ($reste[$value] ?? 0) + ($sums[$value] ?? 0) + ($resteTP[$value] ?? 0);
-        }*/
-
-
-
-       // dd($total_annuel);
 
 
         return view('/commune/'.$request->typeRegi, [
@@ -151,9 +115,11 @@ class RegisseurController extends Controller
             'annee' => $request->anneetab,
             'name' => $regisseur->name,
             'commune_Name' => $commune_Name,
-            'reste' => $reste,
-            'resteTP' => $resteTP,
+            'reste' => $repriseAPP,
+            'resteTP' =>  $repriseTp ,
             'donnes' => $donnes,
+            'sommeTP' => $sommeTP,
+            'sommeAP' => $sommeAP,
             'total_annuel' => $total_annuel,
             'valeurtotal'=>$valeurtotal,
         ]);

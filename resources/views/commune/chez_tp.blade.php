@@ -32,33 +32,33 @@
 
             @foreach($values as $value)
                 <td class="px-6 py-4 border-b border-gray-300 text-center">
-                    {{$resteTP[$value]}}
+                    {{  $resteTP->isNotEmpty() ? $resteTP[0]->{$value} : 0 }}
                 </td>
             @endforeach
             <td class="px-6 py-4 border-b border-gray-300 text-center">
-                {{ isset( $resteTP) ? array_sum($resteTP) : 0 }}
+                {{ $sommeTP }}
             </td>
         </tr>
         <tr>
             <th scope="row" class="text-center">Reprise chez les regisseurs de l'année {{$annee-1}}</th>
             @foreach($values as $value)
                 <td class="px-6 py-4 border-b border-gray-300 text-center">
-                    {{ isset( $reste[$value]) ? $reste[$value] : 0 }}
+                    {{  $reste->isNotEmpty() ? $reste[0]->{$value} : 0 }}
                 </td>
             @endforeach
             <td class="px-6 py-4 border-b border-gray-300 text-center">
-                {{ isset( $reste) ? array_sum($reste) : 0 }}
+                {{ $sommeAP }}
             </td>
         </tr>
         <tr>
             <th scope="row" class="text-center">Total Des reprises</th>
             @foreach($values as $value)
                 <td class="px-6 py-4 border-b border-gray-300 text-center">
-                    {{ isset( $reste[$value]) ? $reste[$value]+$resteTP[$value] : 0 }}
+                    {{$reste->isNotEmpty() ? $reste[0]->{$value}+$resteTP[0]->{$value} :0}}
                 </td>
             @endforeach
             <td class="px-6 py-4 border-b border-gray-300 text-center">
-                {{ isset( $resteTP) ? array_sum($reste)+ array_sum($resteTP) : 0 }}
+                {{  $sommeAP + $sommeTP }}
             </td>
         </tr>
 

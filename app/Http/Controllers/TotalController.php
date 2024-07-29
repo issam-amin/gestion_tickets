@@ -153,54 +153,39 @@ class TotalController extends Controller
     {
 
 
-        $reste = ['0.5' => 0, '1' => 0, '2' => 0, '5' => 0, '50' => 0];
-        $resteTP=['0.5'=>0, '1'=>0, '2'=>0, '5'=>0, '50'=>0];
+
         $keysToFetch = ['0.5', 1, 2, 5, 50];
+
         $check = DB::table('totals')
             ->where('regisseur_id', $IDRegisseur)
             ->where('annee', $annee)
             ->where('type', $typeRegisseur)
             ->orderBy('id')
             ->get();
-        $reprise = DB::table('totals')
+
+        $repriseAPP = DB::table('recaps')
             ->where('regisseur_id', $IDRegisseur)
             ->where('annee', $annee - 1)
-            ->whereIn('type', ['approvisionnement', 'versement'])
+            ->whereIn('type', ['approvisionnement'])
             ->orderBy('id')
             ->get();
 
-        if ($reprise->count() > 1) {
-            $reste['0.5'] += ($reprise[0]->{'0.5'} ?? 0) - ($reprise[1]->{'0.5'} ?? 0);
-            $reste['1'] += ($reprise[0]->{'1'} ?? 0) - ($reprise[1]->{'1'} ?? 0);
-            $reste['2'] += ($reprise[0]->{'2'} ?? 0) - ($reprise[1]->{'2'} ?? 0);
-            $reste['5'] += ($reprise[0]->{'5'} ?? 0) - ($reprise[1]->{'5'} ?? 0);
-            $reste['50'] += ($reprise[0]->{'50'} ?? 0) - ($reprise[1]->{'50'} ?? 0);
-        }
+
+        $repriseTp = collect();
 
         if ($typeRegisseur == 'chez_tp') {
-
-            $totalTP=DB::table('totals')
+            $repriseTp = DB::table('recaps')
                 ->where('regisseur_id', $IDRegisseur)
-                ->where('annee', $annee-1)
-                ->where('type','chez_tp')
+                ->where('annee', $annee - 1)
+                ->whereIn('type', ['chez_tp'])
                 ->orderBy('id')
                 ->get();
 
-            $totalAPP=DB::table('totals')
-                ->where('regisseur_id', $IDRegisseur)
-                ->where('annee', $annee-1)
-                ->where('type','approvisionnement')
-                ->orderBy('id')
-                ->get();
-
-
-            $values = ['0.5', '1', '2', '5', '50'];
-            foreach ($values as $value) {
-                $resteTP[$value] += ($totalTP->first()->{$value} ?? 0)-($totalAPP->first()->{$value} ?? 0);
-            }
         }
-        if ($check->isEmpty()) {
 
+
+
+        if ($check->isEmpty()) {
             $var = total::create([
                 'type' => $typeRegisseur,
                 'annee' => $annee,
@@ -208,7 +193,8 @@ class TotalController extends Controller
             ]);
 
             foreach ($keysToFetch as $key) {
-                $newValue = $totalAnnuel[$key]+$reste[$key]+$resteTP[$key];
+
+                $newValue = $totalAnnuel[$key] + ($repriseAPP->isNotEmpty() ? $repriseAPP[0]->{$key}* $key : 0) + ($repriseTp->isNotEmpty() ? $repriseTp[0]->{$key} : 0);
                 $varId = $var->id;
                 $sql = "UPDATE `totals` SET `$key` = ?, `updated_at` = ? WHERE `id` = ?";
                 DB::statement($sql, [$newValue, now(), $varId]);
@@ -223,19 +209,20 @@ class TotalController extends Controller
                 ]);
 
                 foreach ($keysToFetch as $key) {
-                    $newValue = $totalAnnuel[$key]+$reste[$key]+$resteTP[$key];
+
+                    $newValue = $totalAnnuel[$key] +($repriseAPP->isNotEmpty() ? $repriseAPP[0]->{$key} : 0)  + ($repriseTp->isNotEmpty() ? $repriseTp[0]->{$key} : 0);
                     $varId = $var->id;
                     $sql = "UPDATE `totals` SET `$key` = ?, `updated_at` = ? WHERE `id` = ?";
                     DB::statement($sql, [$newValue, now(), $varId]);
                 }
-
             }
         }
+        $recapController = new RecapController();
+        $recapController->store($typeRegisseur, $annee, $IDRegisseur);
     }
 
 
-
-    /**
+        /**
      * Display the specified resource.
      */
     public function show( $id,  $annee)
@@ -285,7 +272,7 @@ class TotalController extends Controller
             foreach ($values as $value) {
                 $sumAPP += $totalAPP->first()->{$value} ?? 0;
                 $sumTP+= $totalTP->first()->{$value} ?? 0;
-                $resteTP[$value] += $totalTP->first()->{$value} ?? 0-$totalAPP->first()->{$value} ?? 0;
+                $resteTP[$value] += ($totalTP->first()->{$value} ?? 0)-($totalAPP->first()->{$value} ?? 0);
             }
 
 

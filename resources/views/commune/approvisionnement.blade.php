@@ -7,7 +7,6 @@
                 <div class="font-extrabold text-red-500 ml-4 mb-4 sm:mb-0">L'année : {{$annee}}</div>
             </div>
             <x-button class="bg-blue-500 hover:bg-blue-700 text-black font-bold py-2 px-4 rounded" href="/Regisseur/{{$IDRegisseur}}/{{$annee}}">Voir Recap</x-button>
-
         </div>
 
     </x-slot>
@@ -36,15 +35,18 @@
                     $totalsum = [];
                     $valeurs = ['0.5', '1', '2', '5', '50'];
                 @endphp
-                <th scope="row" class="text-center">Reprise Annee {{$annee-1}}</th>
+                <th scope="row" class="text-center text-red-400" style="color: red">Reprise Annee {{$annee-1}}</th>
+
                 @foreach($values as $value)
-                    <td class="px-6 py-4 border-b border-gray-300 text-center">
-                        {{ isset( $reste[$value]) ? $reste[$value] : 0 }}
+                    <td class="px-6 py-4 border-b border-gray-300 text-center font-bold" style="color: red ;font-size: large">
+                        {{  $reste->isNotEmpty() ? $reste[0]->{$value} : 0 }}
                     </td>
                 @endforeach
-                <td class="px-6 py-4 border-b border-gray-300 text-center">
-                    {{ isset( $reste) ? array_sum($reste) : 0 }}
+
+                <td class="px-6 py-4 border-b border-gray-300 text-center" style="color: red; font-size: large">
+                    {{ $sommeAP }}
                 </td>
+
             </tr>
 
             @php $i = 0; @endphp
@@ -62,6 +64,7 @@
                         </td>
                     @endforeach
 
+
                     <td class="px-6 py-4 border-b border-gray-300 text-center">{{ isset($donnes[$i]) ? $donnes[$i]->Somme : 0 }}</td>
                 </tr>
                 @php $i++; @endphp
@@ -69,7 +72,7 @@
 
             <tr>
                 <th scope="row" class="text-center">TOTAL</th>
-                @foreach($valeurs as $value)
+                @foreach($values as $value)
                     <td class="px-6 py-4 border-b border-gray-300 text-center">
                         {{ $total_annuel->{$value} ?? '0' }}
                     </td>
