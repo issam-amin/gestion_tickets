@@ -57,7 +57,7 @@ class CommuneController extends Controller
 
 
 
-        $typRegi=['approvisionnement','versement','chez_tp'];
+        $typRegi=['approvisionnement','versement'];
         for ($i=2023;$i<Carbon::now()->year+1;$i++){
             $annees[]=$i;
         }

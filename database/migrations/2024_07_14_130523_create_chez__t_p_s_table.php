@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\regisseur;
+use App\Models\commune;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -18,12 +18,13 @@ return new class extends Migration
             $table->double(DB::raw('`0.5`'))->nullable();
             $table->double(DB::raw('`1`'))->nullable();
             $table->double(DB::raw('`5`'))->nullable();
+            $table->double(DB::raw('`7`'))->nullable();
             $table->double(DB::raw('`2`'))->nullable();
             $table->double(DB::raw('`50`'))->nullable();
             $table->string('mois');
             $table->unsignedInteger('annee');
             $table->double('Somme')->nullable();
-            $table->foreignIdFor(Regisseur::class)->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(commune::class)->nullable()->constrained()->cascadeOnDelete();
             $table->timestamps();
 
         });

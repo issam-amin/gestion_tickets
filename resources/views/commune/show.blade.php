@@ -1,9 +1,28 @@
 <x-layout>
     <x-slot name="headings">
         <div class="flex items-center justify-between" style="margin-top:20px">
-            <div class="text-blue-500">La Commune Urbaine : {{$nomCom->name}}</div>
+            <div class="text-blue-500">La Commune {{ucfirst($nomCom['region'])}} :  {{$nomCom->name}}</div>
             <div style="margin-left:20px">
-                <x-button href="/names/create">Create</x-button>
+                <form method="POST" action="/Regisseur/chez_tp/{{$nomCom->name}}">
+                    @csrf
+                    <div class="flex items-center justify-between">
+                        <x-form-button type="submit" class="btn btn-light">Chez_Tp</x-form-button>
+                            <div class="ml-10 flex items-center justify-between">
+                                <label for="annee" class="block mb-2 text-3xl dark:text-white text-blue-500 "> Année</label>
+                                <select id="annee" name="annee"  class="form-select form-select-lg mb-3 w-auto ml-10 font-bold" aria-label="Large select example">
+                                    @if (!empty($annees))
+                                        @foreach($annees as $annee)
+                                            <option value="{{$annee}}">{{$annee}}</option>
+                                        @endforeach
+                                    @else
+                                        <option>No Year found for this CU.</option>
+                                    @endif
+                                </select>
+
+
+                            </div>
+                    </div>
+                </form>
             </div>
         </div>
     </x-slot>
@@ -11,7 +30,7 @@
         @csrf
         <div class="flex justify-content-around">
         <div >
-            <label for="regisseurs" class="block mb-2 text-3xl text-gray-900 dark:text-white font-bold">Select an option</label>
+            <label for="regisseurs" class="block mb-2 text-3xl text-gray-900 dark:text-white font-bold">Selectionner REG</label>
             <select id="regisseurs" name="regisseurs"  class="form-select form-select-lg mb-3" aria-label="Large select example">
                 @if (!empty($regisseurs))
                     @foreach($regisseurs as $regisseur)
@@ -24,11 +43,11 @@
         </div>
 
         <div>
-            <label for="typeRegi" class="block mb-2 text-3xl text-gray-900 dark:text-white font-bold">Select an option</label>
+            <label for="typeRegi" class="block mb-2 text-3xl text-gray-900 dark:text-white font-bold">Selectionner TABLE</label>
             <select id="typeRegi" name="typeRegi"  class="form-select form-select-lg mb-3" aria-label="Large select example">
                 @if (!empty($typeRegisseur))
                     @foreach($typeRegisseur as $type)
-                        <option value="{{$type}}">{{$type}}</option>
+                        <option value="{{$type}}">{{strtoupper($type)}}</option>
                     @endforeach
                 @else
                     <option>No type found for this CU.</option>
@@ -37,7 +56,7 @@
         </div>
 
         <div>
-            <label for="anneetab" class="block mb-2 text-3xl text-gray-900 dark:text-white font-bold">Select an option</label>
+            <label for="anneetab" class="block mb-2 text-3xl text-gray-900 dark:text-white font-bold">Selectionner L'année</label>
             <select id="anneetab" name="anneetab"  class="form-select form-select-lg mb-3" aria-label="Large select example">
                 @if (!empty($annees))
                     @foreach($annees as $annee)

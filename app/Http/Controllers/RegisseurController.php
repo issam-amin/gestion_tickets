@@ -15,13 +15,14 @@ use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use JetBrains\PhpStorm\NoReturn;
+use function PHPUnit\Framework\isEmpty;
 
 class RegisseurController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request,$nom): View|Factory|Application
+    public function index(Request $request): View|Factory|Application
     {
 
         $sommeAP = 0;
@@ -32,7 +33,7 @@ class RegisseurController extends Controller
 
         $commune_Name = $regisseur->commune()->first()->name;
 
-        $values = ['0.5', '1', '5', '2', '50'];
+        $values = ['0.5', '1', '5','7', '2', '50'];
         $months = [
             'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
             'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
@@ -68,7 +69,7 @@ class RegisseurController extends Controller
 
 
 
-        $repriseTp =collect();
+        /*$repriseTp =collect();
         if ($request->typeRegi == 'chez_tp') {
             $repriseTp = DB::table('recaps')
                 ->where('regisseur_id', $idregisseur)
@@ -81,7 +82,7 @@ class RegisseurController extends Controller
                     $sommeTP += $repriseTp[0]->{$key} ;
                 }
             }
-        }
+        }*/
 
 
 
@@ -104,6 +105,8 @@ class RegisseurController extends Controller
                 $valeurtotal += $total_annuel->{$value};
             }
         }
+        $valeurtotal = number_format($valeurtotal ?? 0, 2, ',', ' ');
+
 
 
         return view('/commune/'.$request->typeRegi, [
@@ -116,6 +119,99 @@ class RegisseurController extends Controller
             'name' => $regisseur->name,
             'commune_Name' => $commune_Name,
             'reste' => $repriseAPP,
+            'donnes' => $donnes,
+            'sommeTP' => $sommeTP,
+            'sommeAP' => $sommeAP,
+            'total_annuel' => $total_annuel,
+            'valeurtotal'=>$valeurtotal,
+        ]);
+    }
+    public function ChezTP(Request $request,$nom)
+    {
+
+
+        $repriseAPP=[];
+        $repriseTp=collect();
+        $sommeAP = 0;
+        $sommeTP = 0;
+        $annee = $request->annee;
+        $values = ['0.5', 1, 2, 7, 5, 50];
+        $months = [
+            'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+            'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+        ];
+        $com = commune::where('name', $nom)->first();
+        // recap Tp
+        $repriseTp=DB::table('recap_tps')
+            ->where('commune_id', $com->id)
+            ->where('annee', $annee-1)
+            ->orderBy('id')
+            ->get();
+
+        foreach ($values as $key) {
+            $sommeTP += $repriseTp[0]->{$key} ;
+        }
+        // recap APP
+        $regis = $com->regisseurs()->get();
+        foreach ($regis as $regi) {
+            foreach ($values as $value) {
+                $column = $value;
+
+                    $repriseAPP[$regi->id][$value] = DB::table('recaps')
+                        ->where('regisseur_id', $regi->id)
+                        ->where('annee', $annee-1 )
+                        ->where('type', 'approvisionnement')
+                        ->sum(DB::raw("`$column`"));
+
+            }
+        }
+
+        foreach ($values as $value) {
+            $total_sum = 0;
+            foreach ($repriseAPP as $regi->id => $appro) {
+                if (isset($appro[$value])) {
+
+                    $total_sum += $appro[$value];
+                }
+            }
+            $repriseAPP['total'][$value] = $total_sum;
+        }
+
+        foreach ($values as $value) {
+            $sommeAP += $repriseAPP['total'][$value];
+        }
+        // Colonne des mois pour chaque régisseur
+        $donnes = DB::table('chez__t_p_s')
+            ->where('commune_id', $com->id)
+            ->where('annee', $annee)
+            ->orderBy('id')
+            ->get();
+
+        $total_annuel=DB::table('total_tps')
+            ->where('commune_id', $com->id)
+            ->where('annee', $annee)
+            ->orderBy('id')
+            ->first();
+
+        $valeurtotal=0;
+        if(!empty($total_annuel)){
+            foreach ($values as $value) {
+                $valeurtotal += $total_annuel->{$value};
+            }
+        }
+        $valeurtotal = number_format($valeurtotal ?? 0, 2, ',', ' ');
+
+
+
+        return view('/commune/chez_tp', [
+
+            'IDRegisseur' => $request->regisseurs,
+            'typeRegisseur' => 'chez_tp',
+            'values' => $values,
+            'months' => $months,
+            'annee' => $request->annee,
+            'commune_Name' => $nom,
+           'reste' => $repriseAPP['total'],
             'resteTP' =>  $repriseTp ,
             'donnes' => $donnes,
             'sommeTP' => $sommeTP,
@@ -123,6 +219,7 @@ class RegisseurController extends Controller
             'total_annuel' => $total_annuel,
             'valeurtotal'=>$valeurtotal,
         ]);
+
     }
 
     /**
@@ -137,14 +234,17 @@ class RegisseurController extends Controller
      /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, $typeRegisseur,$annee, $IDRegisseur)
+    public function store(Request $request, $typeRegisseur,$annee , $IDRegisseur, $nom)
     {
-        $totalAnnuel= ['0.5' => 0, '1' => 0, '2' => 0, '5' => 0, '50' => 0];
+
+
+        $totalAnnuel= ['0.5' => 0, '1' => 0, '2' => 0,'7'=>0, '5' => 0, '50' => 0];
         $months = [
             'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
             'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
         ];
-        $values = ['0.5', '1', '2', '5', '50'];
+        $values = ['0.5', '1', '5','7', '2', '50'];
+
         $reste = ['0.5' => 0, '1' => 0, '2' => 0, '5' => 0, '50' => 0];
 
         $table = '';
@@ -160,13 +260,23 @@ class RegisseurController extends Controller
             $table = 'chez__t_p_s';
             $model = new Chez_TP();
         }
-
+        $com = commune::where('name', $nom)->first();
         if ($table && $model) {
-            $check = DB::table($table)
-                ->where('regisseur_id', $IDRegisseur)
-                ->where('annee', $annee)
-                ->orderBy('id')
-                ->get();
+            if ($typeRegisseur == 'chez_tp') {
+
+                $check = DB::table('chez__t_p_s')
+                    ->where('commune_id', $com->id)
+                    ->where('annee', $annee)
+                    ->orderBy('id')
+                    ->get();
+
+            } else {
+                $check = DB::table($table)
+                    ->where('regisseur_id', $IDRegisseur)
+                    ->where('annee', $annee)
+                    ->orderBy('id')
+                    ->get();
+            }
 
             if ($check->count() != 0) {
                 foreach ($check as $month) {
@@ -180,6 +290,7 @@ class RegisseurController extends Controller
                     $totalAnnuel['0.5'] += $request[$month->mois]['0.5']*0.5;
                     $totalAnnuel['1'] += $request[$month->mois]['1']*1;
                     $totalAnnuel['2'] += $request[$month->mois]['2']*2;
+                    $totalAnnuel['7'] += $request[$month->mois]['7']*7;
                     $totalAnnuel['5'] += $request[$month->mois]['5']*5;
                     $totalAnnuel['50'] += $request[$month->mois]['50']*50;
 
@@ -188,6 +299,7 @@ class RegisseurController extends Controller
                         'Somme' => $sum,
                         '1' => $request[$month->mois]['1'],
                         '2' => $request[$month->mois]['2'],
+                        '7' => $request[$month->mois]['7'],
                         '5' => $request[$month->mois]['5'],
                         '50' => $request[$month->mois]['50'],
                     ]);
@@ -209,6 +321,7 @@ class RegisseurController extends Controller
                     $totalAnnuel['0.5'] += $request[$month]['0.5']*0.5;
                     $totalAnnuel['1'] += $request[$month]['1']*1;
                     $totalAnnuel['2'] += $request[$month]['2']*2;
+                    $totalAnnuel['7'] += $request[$month]['7']*7;
                     $totalAnnuel['5'] += $request[$month]['5']*5;
                     $totalAnnuel['50'] += $request[$month]['50']*50;
 
@@ -219,9 +332,21 @@ class RegisseurController extends Controller
                         '1' => $request[$month]['1'],
                         '2' => $request[$month]['2'],
                         '5' => $request[$month]['5'],
+                        '7' => $request[$month]['7'],
                         '50' => $request[$month]['50'],
-                        'regisseur_id' => $IDRegisseur,
+
                     ]);
+                    if ($typeRegisseur == 'chez_tp') {
+                        $var->update([
+                            'commune_id' => $com->id,
+                        ]);
+
+                    }else{
+                        $var->update([
+                            'regisseur_id' => $IDRegisseur,
+                        ]);
+
+                    }
 
                     $racho = '0.5';
                     $newValue = $request[$month][$racho];
@@ -235,10 +360,15 @@ class RegisseurController extends Controller
 
 
         $totalController = new TotalController();
-        $totalController->store($totalAnnuel, $typeRegisseur, $annee, $IDRegisseur);
+        $totalController->store($totalAnnuel, $typeRegisseur, $annee, $IDRegisseur,$nom);
+        if ($typeRegisseur == 'chez_tp') {
+            $commune = commune::where('name', $nom)->first();
+            return redirect('/commune/' . $commune->region);
+        }else{
+            $commune=regisseur::find($IDRegisseur)->commune()->first();
+            return redirect('/commune/'.$commune->region);
+        }
 
-        $commune=regisseur::find($IDRegisseur)->commune()->first();
-        return redirect('/commune/'.$commune->region);
     }
 
 
@@ -253,7 +383,7 @@ class RegisseurController extends Controller
 
         $table_total = ['0.5' => 0, '1' => 0, '2' => 0, '5' => 0, '50' => 0];
         $selectedYear = $request->input('anneetab1');
-        $values = ['0.5','1', '2', '5', '50'];
+        $values = ['0.5','1', '5', '2', '50'];
         $total_appro = [];
         $total_ver = [];
         $commune = commune::where('name', $name)->first();

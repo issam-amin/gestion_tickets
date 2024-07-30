@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\commune;
 use App\Models\recap;
+use App\Models\RecapTp;
 use App\Models\total;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -28,7 +30,7 @@ class RecapController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store($typeRegisseur, $annee, $IDRegisseur)
+    public function store($typeRegisseur, $annee, $IDRegisseur, $nomcom)
     {
         $reste = ['0.5' => 0, '1' => 0, '2' => 0, '5' => 0, '50' => 0];
         $keysToFetch = ['0.5', 1, 2, 5, 50];
@@ -58,55 +60,74 @@ class RecapController extends Controller
         }
 
         elseif ($typeRegisseur == 'chez_tp') {
+            $com = commune::where('name', $nomcom)->first();
 
-            $totalTP=DB::table('totals')
-                ->where('regisseur_id', $IDRegisseur)
+            $totalTP=DB::table('total_tps')
+                ->where('commune_id', $com->id)
                 ->where('annee', $annee)
                 ->where('type','chez_tp')
                 ->orderBy('id')
                 ->get();
 
-            $totalAPP=DB::table('totals')
-                ->where('regisseur_id', $IDRegisseur)
-                ->where('annee', $annee)
-                ->where('type','approvisionnement')
-                ->orderBy('id')
-                ->get();
+          //  $totalAPP
+            $regis = $com->regisseurs()->get();
+            foreach ($regis as $regi) {
+                foreach ($keysToFetch as $value) {
+                    $column = $value;
 
+                    $totalAPP[$regi->id][$value] = DB::table('recaps')
+                        ->where('regisseur_id', $regi->id)
+                        ->where('annee', $annee-1 )
+                        ->where('type', 'approvisionnement')
+                        ->sum(DB::raw("`$column`"));
 
-            $values = ['0.5', '1', '2', '5', '50'];
+                }
+            }
+
+            foreach ($keysToFetch as $value) {
+                $total_sum = 0;
+                foreach ($totalAPP as $regi->id => $appro) {
+                    if (isset($appro[$value])) {
+
+                        $total_sum += $appro[$value];
+                    }
+                }
+                $totalAPP['total'][$value] = $total_sum;
+            }
+
+            $values = ['0.5', '1', '5', '2', '50'];
             foreach ($values as $value) {
-                $reste[$value] += ($totalTP->first()->{$value} ?? 0)-($totalAPP->first()->{$value} ?? 0);
+                $reste[$value] += ($totalTP->first()->{$value} ?? 0)-($totalAPP['total'][$value] ?? 0);
             }
 
         }
         if ($check->count()==0) {
 
-            $var = recap::create([
+            $var = RecapTp::create([
                 'type' => $typeRegisseur,
                 'annee' => $annee,
-                'regisseur_id' => $IDRegisseur,
+                'commune_id' => $com->id,
             ]);
 
             foreach ($keysToFetch as $key) {
                 $newValue = $reste[$key];
                 $varId = $var->id;
-                $sql = "UPDATE `recaps` SET `$key` = ?, `updated_at` = ? WHERE `id` = ?";
+                $sql = "UPDATE `recap_tps` SET `$key` = ?, `updated_at` = ? WHERE `id` = ?";
                 DB::statement($sql, [$newValue, now(), $varId]);
             }
         } else {
             foreach ($check as $item) {
-                $var = recap::find($item->id);
+                $var = RecapTp::find($item->id);
                 $var->update([
                     'type' => $typeRegisseur,
                     'annee' => $annee,
-                    'regisseur_id' => $IDRegisseur,
+                    'commune_id' => $com->id,
                 ]);
 
                 foreach ($keysToFetch as $key) {
                     $newValue = $reste[$key];
                     $varId = $var->id;
-                    $sql = "UPDATE `recaps` SET `$key` = ?, `updated_at` = ? WHERE `id` = ?";
+                    $sql = "UPDATE `recap_tps` SET `$key` = ?, `updated_at` = ? WHERE `id` = ?";
                     DB::statement($sql, [$newValue, now(), $varId]);
                 }
 

@@ -6,14 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Chez_TP extends Model
+class TotalTp extends Model
 {
-    use HasFactory;
     protected $guarded = [];
+    use HasFactory;
     public function commune(): BelongsTo
     {
-        return $this->belongsTo(commune::class);
-
+        return $this->BelongsTo(commune::class);
     }
-
 }

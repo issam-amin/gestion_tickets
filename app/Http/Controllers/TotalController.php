@@ -6,12 +6,14 @@ use App\Models\APPROVISIONNEMENT;
 use App\Models\commune;
 use App\Models\regisseur;
 use App\Models\total;
+use App\Models\TotalTp;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use function PHPUnit\Framework\isEmpty;
 
 class TotalController extends Controller
 {
@@ -36,7 +38,7 @@ class TotalController extends Controller
    }
     public function display(Request $request): Application|Factory|View
     {
-        $values = ['0.5', '1', '2', '5', '50'];
+        $values = ['0.5', '1', '5', '2', '50'];
         $table_mois = array_fill_keys([
             'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
             'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
@@ -149,60 +151,31 @@ class TotalController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store($totalAnnuel, $typeRegisseur, $annee, $IDRegisseur)
+    public function store($totalAnnuel, $typeRegisseur, $annee, $IDRegisseur,$nomcom)
     {
 
 
 
-        $keysToFetch = ['0.5', 1, 2, 5, 50];
-
-        $check = DB::table('totals')
-            ->where('regisseur_id', $IDRegisseur)
-            ->where('annee', $annee)
-            ->where('type', $typeRegisseur)
-            ->orderBy('id')
-            ->get();
-
-        $repriseAPP = DB::table('recaps')
-            ->where('regisseur_id', $IDRegisseur)
-            ->where('annee', $annee - 1)
-            ->whereIn('type', ['approvisionnement'])
-            ->orderBy('id')
-            ->get();
-
-
+        $keysToFetch = ['0.5', 1, 2, 7, 5, 50];
         $repriseTp = collect();
+        $repriseAPP = collect();
+        $repriseAPP_TP=[];
 
-        if ($typeRegisseur == 'chez_tp') {
-            $repriseTp = DB::table('recaps')
+        if ($typeRegisseur == 'approvisionnement') {
+            $check = DB::table('totals')
                 ->where('regisseur_id', $IDRegisseur)
-                ->where('annee', $annee - 1)
-                ->whereIn('type', ['chez_tp'])
+                ->where('annee', $annee)
+                ->where('type', $typeRegisseur)
                 ->orderBy('id')
                 ->get();
-
-        }
-
-
-
-        if ($check->isEmpty()) {
-            $var = total::create([
-                'type' => $typeRegisseur,
-                'annee' => $annee,
-                'regisseur_id' => $IDRegisseur,
-            ]);
-
-            foreach ($keysToFetch as $key) {
-
-                $newValue = $totalAnnuel[$key] + ($repriseAPP->isNotEmpty() ? $repriseAPP[0]->{$key}* $key : 0) + ($repriseTp->isNotEmpty() ? $repriseTp[0]->{$key} : 0);
-                $varId = $var->id;
-                $sql = "UPDATE `totals` SET `$key` = ?, `updated_at` = ? WHERE `id` = ?";
-                DB::statement($sql, [$newValue, now(), $varId]);
-            }
-        } else {
-            foreach ($check as $item) {
-                $var = total::find($item->id);
-                $var->update([
+            $repriseAPP = DB::table('recaps')
+                ->where('regisseur_id', $IDRegisseur)
+                ->where('annee', $annee - 1)
+                ->whereIn('type', ['approvisionnement'])
+                ->orderBy('id')
+                ->get();
+            if ($check->isEmpty()) {
+                $var = total::create([
                     'type' => $typeRegisseur,
                     'annee' => $annee,
                     'regisseur_id' => $IDRegisseur,
@@ -210,15 +183,113 @@ class TotalController extends Controller
 
                 foreach ($keysToFetch as $key) {
 
-                    $newValue = $totalAnnuel[$key] +($repriseAPP->isNotEmpty() ? $repriseAPP[0]->{$key} : 0)  + ($repriseTp->isNotEmpty() ? $repriseTp[0]->{$key} : 0);
+                    $newValue = $totalAnnuel[$key] + ($repriseAPP->isNotEmpty() ? $repriseAPP[0]->{$key} : 0) + ($repriseTp->isNotEmpty() ? $repriseTp[0]->{$key} : 0);
                     $varId = $var->id;
                     $sql = "UPDATE `totals` SET `$key` = ?, `updated_at` = ? WHERE `id` = ?";
                     DB::statement($sql, [$newValue, now(), $varId]);
                 }
+            } else {
+                foreach ($check as $item) {
+                    $var = total::find($item->id);
+                    $var->update([
+                        'type' => $typeRegisseur,
+                        'annee' => $annee,
+                        'regisseur_id' => $IDRegisseur,
+                    ]);
+
+                    foreach ($keysToFetch as $key) {
+
+                        $newValue = $totalAnnuel[$key] +($repriseAPP->isNotEmpty() ? $repriseAPP[0]->{$key} : 0)  + ($repriseTp->isNotEmpty() ? $repriseTp[0]->{$key} : 0);
+                        $varId = $var->id;
+                        $sql = "UPDATE `totals` SET `$key` = ?, `updated_at` = ? WHERE `id` = ?";
+                        DB::statement($sql, [$newValue, now(), $varId]);
+                    }
+                }
             }
         }
+
+
+
+        elseif ($typeRegisseur == 'chez_tp') {
+            $com = commune::where('name', $nomcom)->first();
+            $check = DB::table('total_tps')
+                ->where('commune_id', $com->id)
+                ->where('annee', $annee)
+                ->where('type', $typeRegisseur)
+                ->orderBy('id')
+                ->get();
+            //chez Tp
+            $repriseTp = DB::table('recap_tps')
+                ->where('commune_id', $com->id)
+                ->where('annee', $annee - 1)
+                ->whereIn('type', ['chez_tp'])
+                ->orderBy('id')
+                ->get();
+            //chez REG
+            $regis = $com->regisseurs()->get();
+            foreach ($regis as $regi) {
+                foreach ($keysToFetch as $value) {
+                    $column = $value;
+                    $repriseAPP_TP[$regi->id][$value] = DB::table('recaps')
+                        ->where('regisseur_id', $regi->id)
+                        ->where('annee', $annee-1 )
+                        ->where('type', 'approvisionnement')
+                        ->sum(DB::raw("`$column`"));
+
+                } }
+            foreach ($keysToFetch as $value) {
+                $total_sum = 0;
+
+                foreach ($repriseAPP as $regi->id => $appro) {
+                    if (isset($appro[$value])) {
+                        $total_sum += $appro[$value];
+                    }
+                }
+                $repriseAPP_TP['total'][$value] = $total_sum;
+            }
+
+
+
+
+
+
+            if ($check->isEmpty()) {
+                $var = TotalTp::create([
+                    'type' => $typeRegisseur,
+                    'annee' => $annee,
+                    'commune_id' => $com->id,
+                ]);
+
+                foreach ($keysToFetch as $key) {
+
+                    $newValue = $totalAnnuel[$key] +(!isEmpty($repriseAPP_TP) ? $repriseAPP_TP['total'][$key] : 0)+ ($repriseTp->isNotEmpty() ? $repriseTp[0]->{$key} : 0);
+                    $varId = $var->id;
+                    $sql = "UPDATE `total_tps` SET `$key` = ?, `updated_at` = ? WHERE `id` = ?";
+                    DB::statement($sql, [$newValue, now(), $varId]);
+                }
+            } else {
+                foreach ($check as $item) {
+                    $var = TotalTp::find($item->id);
+                    $var->update([
+                        'type' => $typeRegisseur,
+                        'annee' => $annee,
+                        'commune_id' => $com->id,
+                    ]);
+
+                    foreach ($keysToFetch as $key) {
+
+                        $newValue = $totalAnnuel[$key] +(!isEmpty($repriseAPP_TP)  ? $repriseAPP_TP['total'][$key]  : 0)  + ($repriseTp->isNotEmpty() ? $repriseTp[0]->{$key} : 0);
+                        $varId = $var->id;
+                        $sql = "UPDATE `total_tps` SET `$key` = ?, `updated_at` = ? WHERE `id` = ?";
+                        DB::statement($sql, [$newValue, now(), $varId]);
+                    }
+                }
+            }
+        }
+
+
         $recapController = new RecapController();
-        $recapController->store($typeRegisseur, $annee, $IDRegisseur);
+        $recapController->store($typeRegisseur, $annee, $IDRegisseur,$nomcom);
     }
 
 
@@ -230,7 +301,7 @@ class TotalController extends Controller
         $regisseur=regisseur::find($id);
         $approv=['0.5'=>0, '1'=>0, '2'=>0, '5'=>0, '50'=>0];
         $versement=['0.5'=>0, '1'=>0, '2'=>0, '5'=>0, '50'=>0];
-        $values = ['0.5', '1', '2', '5', '50'];
+        $values = ['0.5', '1', '5', '2', '50'];
         $QUE = DB::table('totals')
             ->where('regisseur_id', $id)
             ->where('annee', $annee)

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->double(DB::raw('`0.5`'))->nullable();
             $table->double(DB::raw('`1`'))->nullable();
             $table->double(DB::raw('`5`'))->nullable();
+            $table->double(DB::raw('`7`'))->nullable();
             $table->double(DB::raw('`2`'))->nullable();
             $table->double(DB::raw('`50`'))->nullable();
             $table->string('mois');
