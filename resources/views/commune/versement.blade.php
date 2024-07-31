@@ -10,7 +10,7 @@
         </div>
     </x-slot>
 
-    <form method="POST" action="/{{$typeRegisseur}}/{{$annee}}/{{$IDRegisseur}}">
+    <form method="POST" action="/{{$typeRegisseur}}/{{$annee}}/{{$IDRegisseur}}/{{$commune_Name}}">
         @csrf
 
         <div class="overflow-x-auto">
@@ -52,7 +52,7 @@
                         <input type="hidden" name="total_annuel[{{ $value }}]" value="{{ $total_annuel->{$value} ?? '0' }}">
                     @endforeach
                     <td class="px-6 py-4 border-b border-gray-300 text-center text-red-600 font-bold">
-                        {{ number_format(floatval($valeurtotal) ?? 0, 2, ',', ' ') }}
+                        {{ $valeurtotal}}
                     </td>
                 </tr>
                 </tbody>

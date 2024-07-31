@@ -32,16 +32,18 @@ class RecapController extends Controller
      */
     public function store($typeRegisseur, $annee, $IDRegisseur, $nomcom)
     {
-        $reste = ['0.5' => 0, '1' => 0, '2' => 0, '5' => 0, '50' => 0];
-        $keysToFetch = ['0.5', 1, 2, 5, 50];
-        $check = DB::table('recaps')
-            ->where('regisseur_id', $IDRegisseur)
-            ->where('annee', $annee)
-            ->where('type', $typeRegisseur)
-            ->orderBy('id')
-            ->get();
-        if ($typeRegisseur == 'approvisionnement' || $typeRegisseur == 'versement') {
+        $reste = ['0.5' => 0, '1' => 0, '2' => 0,'7' => 0 ,'5' => 0, '50' => 0];
+        $keysToFetch = ['0.5', 1, 2,7, 5, 50];
 
+        if ($typeRegisseur == 'approvisionnement' || $typeRegisseur == 'versement') {
+            $check = DB::table('recaps')
+                ->where('regisseur_id', $IDRegisseur)
+                ->where('annee', $annee)
+                ->where('type', $typeRegisseur)
+                ->orderBy('id')
+                ->get();
+            $table = 'recaps';
+            $model = new recap();
         $reprise = DB::table('totals')
             ->where('regisseur_id', $IDRegisseur)
             ->where('annee', $annee )
@@ -53,15 +55,28 @@ class RecapController extends Controller
             $reste['0.5'] += ($reprise[0]->{'0.5'} ?? 0) - ($reprise[1]->{'0.5'} ?? 0);
             $reste['1'] += ($reprise[0]->{'1'} ?? 0) - ($reprise[1]->{'1'} ?? 0);
             $reste['2'] += ($reprise[0]->{'2'} ?? 0) - ($reprise[1]->{'2'} ?? 0);
+            $reste['7'] += ($reprise[0]->{'7'} ?? 0) - ($reprise[1]->{'7'} ?? 0);
             $reste['5'] += ($reprise[0]->{'5'} ?? 0) - ($reprise[1]->{'5'} ?? 0);
             $reste['50'] += ($reprise[0]->{'50'} ?? 0) - ($reprise[1]->{'50'} ?? 0);
         }
 
+
         }
 
         elseif ($typeRegisseur == 'chez_tp') {
+
+
+            $model = new RecapTp();
+            $table = 'recap_tps';
+
             $com = commune::where('name', $nomcom)->first();
 
+            $check = DB::table('recap_tps')
+                ->where('commune_id', $com->id)
+                ->where('annee', $annee)
+                ->where('type', $typeRegisseur)
+                ->orderBy('id')
+                ->get();
             $totalTP=DB::table('total_tps')
                 ->where('commune_id', $com->id)
                 ->where('annee', $annee)
@@ -103,31 +118,52 @@ class RecapController extends Controller
         }
         if ($check->count()==0) {
 
-            $var = RecapTp::create([
+            $var = $model::create([
                 'type' => $typeRegisseur,
                 'annee' => $annee,
-                'commune_id' => $com->id,
-            ]);
 
+                ]);
+            if ($typeRegisseur == 'chez_tp') {
+                $var->update([
+                    'commune_id' => $com->id,
+                ]);
+
+            }else{
+                $var->update([
+                    'regisseur_id' => $IDRegisseur,
+                ]);
+
+            }
             foreach ($keysToFetch as $key) {
                 $newValue = $reste[$key];
                 $varId = $var->id;
-                $sql = "UPDATE `recap_tps` SET `$key` = ?, `updated_at` = ? WHERE `id` = ?";
+                $sql = "UPDATE $table SET `$key` = ?, `updated_at` = ? WHERE `id` = ?";
                 DB::statement($sql, [$newValue, now(), $varId]);
             }
         } else {
             foreach ($check as $item) {
-                $var = RecapTp::find($item->id);
+                $var = $model::find($item->id);
                 $var->update([
                     'type' => $typeRegisseur,
                     'annee' => $annee,
-                    'commune_id' => $com->id,
+
                 ]);
+                if ($typeRegisseur == 'chez_tp') {
+                    $var->update([
+                        'commune_id' => $com->id,
+                    ]);
+
+                }else{
+                    $var->update([
+                        'regisseur_id' => $IDRegisseur,
+                    ]);
+
+                }
 
                 foreach ($keysToFetch as $key) {
                     $newValue = $reste[$key];
                     $varId = $var->id;
-                    $sql = "UPDATE `recap_tps` SET `$key` = ?, `updated_at` = ? WHERE `id` = ?";
+                    $sql = "UPDATE $table SET `$key` = ?, `updated_at` = ? WHERE `id` = ?";
                     DB::statement($sql, [$newValue, now(), $varId]);
                 }
 

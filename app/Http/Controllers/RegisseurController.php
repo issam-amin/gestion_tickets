@@ -49,9 +49,7 @@ class RegisseurController extends Controller
             case 'versement':
                 $table = 'v_e_r_s_e_m_e_n_t_s';
                 break;
-            case 'chez_tp':
-                $table = 'chez__t_p_s';
-                break;
+
         }
 
         $repriseAPP = DB::table('recaps')
@@ -100,11 +98,13 @@ class RegisseurController extends Controller
             ->orderBy('id')
             ->first();
         $valeurtotal=0;
+
         if(!empty($total_annuel)){
             foreach ($values as $value) {
                 $valeurtotal += $total_annuel->{$value};
             }
         }
+
         $valeurtotal = number_format($valeurtotal ?? 0, 2, ',', ' ');
 
 
@@ -129,48 +129,47 @@ class RegisseurController extends Controller
     public function ChezTP(Request $request,$nom)
     {
 
-
-        $repriseAPP=[];
-        $repriseTp=collect();
+        $repriseAPP = [];
+        $repriseTp = collect();
         $sommeAP = 0;
         $sommeTP = 0;
         $annee = $request->annee;
-        $values = ['0.5', 1, 2, 7, 5, 50];
+        $values = ['0.5', 1, 5, 7, 2, 50];
         $months = [
             'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
             'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
         ];
         $com = commune::where('name', $nom)->first();
-        // recap Tp
-        $repriseTp=DB::table('recap_tps')
+// recap Tp
+        $repriseTp = DB::table('recap_tps')
             ->where('commune_id', $com->id)
-            ->where('annee', $annee-1)
+            ->where('annee', $annee - 1)
             ->orderBy('id')
             ->get();
 
-        foreach ($values as $key) {
-            $sommeTP += $repriseTp[0]->{$key} ;
+        if (!$repriseTp->isEmpty()) {
+            foreach ($values as $key) {
+                $sommeTP += ($repriseTp[0]->{$key} ?? 0);
+            }
         }
-        // recap APP
+
+// recap APP
         $regis = $com->regisseurs()->get();
         foreach ($regis as $regi) {
             foreach ($values as $value) {
                 $column = $value;
-
-                    $repriseAPP[$regi->id][$value] = DB::table('recaps')
-                        ->where('regisseur_id', $regi->id)
-                        ->where('annee', $annee-1 )
-                        ->where('type', 'approvisionnement')
-                        ->sum(DB::raw("`$column`"));
-
+                $repriseAPP[$regi->id][$value] = DB::table('recaps')
+                    ->where('regisseur_id', $regi->id)
+                    ->where('annee', $annee - 1)
+                    ->where('type', 'approvisionnement')
+                    ->sum(DB::raw("`$column`"));
             }
         }
 
         foreach ($values as $value) {
             $total_sum = 0;
-            foreach ($repriseAPP as $regi->id => $appro) {
+            foreach ($repriseAPP as $regisseurId => $appro) {
                 if (isset($appro[$value])) {
-
                     $total_sum += $appro[$value];
                 }
             }
@@ -178,47 +177,46 @@ class RegisseurController extends Controller
         }
 
         foreach ($values as $value) {
-            $sommeAP += $repriseAPP['total'][$value];
+            $sommeAP += ($repriseAPP['total'][$value] ?? 0);
         }
-        // Colonne des mois pour chaque régisseur
+
+// Colonne des mois pour chaque régisseur
         $donnes = DB::table('chez__t_p_s')
             ->where('commune_id', $com->id)
             ->where('annee', $annee)
             ->orderBy('id')
             ->get();
 
-        $total_annuel=DB::table('total_tps')
+        $total_annuel = DB::table('total_tps')
             ->where('commune_id', $com->id)
             ->where('annee', $annee)
             ->orderBy('id')
             ->first();
 
-        $valeurtotal=0;
-        if(!empty($total_annuel)){
+        $valeurtotal = 0;
+        if (!empty($total_annuel)) {
             foreach ($values as $value) {
                 $valeurtotal += $total_annuel->{$value};
             }
         }
         $valeurtotal = number_format($valeurtotal ?? 0, 2, ',', ' ');
 
-
-
         return view('/commune/chez_tp', [
-
             'IDRegisseur' => $request->regisseurs,
             'typeRegisseur' => 'chez_tp',
             'values' => $values,
             'months' => $months,
             'annee' => $request->annee,
             'commune_Name' => $nom,
-           'reste' => $repriseAPP['total'],
-            'resteTP' =>  $repriseTp ,
+            'reste' => $repriseAPP['total'] ?? [],
+            'resteTP' => $repriseTp,
             'donnes' => $donnes,
             'sommeTP' => $sommeTP,
             'sommeAP' => $sommeAP,
             'total_annuel' => $total_annuel,
-            'valeurtotal'=>$valeurtotal,
+            'valeurtotal' => $valeurtotal,
         ]);
+
 
     }
 
@@ -357,8 +355,6 @@ class RegisseurController extends Controller
             }
         }
 
-
-
         $totalController = new TotalController();
         $totalController->store($totalAnnuel, $typeRegisseur, $annee, $IDRegisseur,$nom);
         if ($typeRegisseur == 'chez_tp') {
@@ -381,82 +377,178 @@ class RegisseurController extends Controller
     {
 
 
-        $table_total = ['0.5' => 0, '1' => 0, '2' => 0, '5' => 0, '50' => 0];
+
         $selectedYear = $request->input('anneetab1');
-        $values = ['0.5','1', '5', '2', '50'];
-        $total_appro = [];
-        $total_ver = [];
+
         $commune = commune::where('name', $name)->first();
         $regis=$commune->regisseurs()->get();
+        return \view('commune.type',['name'=>$commune->name,'selectedYear'=>$selectedYear]);
 
-//Approvisionnement
-        foreach ($regis as $regi) {
-
-            foreach ($values as $value) {
-                $column = "`" . $value . "`";
-                $total_appro[$regi->id][$value] = DB::table('totals')
-                    ->where('regisseur_id', $regi->id)
-                    ->where('annee', $selectedYear)
-                    ->where('type', 'approvisionnement')
-                    ->sum(DB::raw($column));
-            }
-        }
-        foreach ($values as $value) {
-            $total_sum = 0;
-            foreach ($total_appro as $regi->id => $appro) {
-                if (isset($appro[$value])) {
-
-                    $total_sum += $appro[$value];
-                }
-            }
-            $total_appro['total'][$value] = $total_sum;
-        }
-// Versement
-        foreach ($regis as $regi) {
-            foreach ($values as $value) {
-                $column = "`" . $value . "`";
-                $total_ver[$regi->id    ][$value] = DB::table('totals')
-                    ->where('regisseur_id', $regi->id)
-                    ->where('annee', $selectedYear)
-                    ->where('type', 'versement')
-                    ->sum(DB::raw($column));
-            }
-        }
-        foreach ($values as $value) {
-            $total_sum = 0;
-            foreach ($total_ver as $regi->id => $ver) {
-                if (isset($ver[$value])) {
-
-                    $total_sum += $ver[$value];
-                }
-            }
-            $total_ver['total'][$value] = $total_sum;
-        }
-
-        //RESTE
-
-
-
-
-                $table_total['0.5'] += $total_appro['total']['0.5']- $total_ver['total']['0.5'];
-                $table_total['1'] += $total_appro['total']['1'] - $total_ver['total']['1'];
-                $table_total['2'] += $total_appro['total']['2'] - $total_ver['total']['2'];
-                $table_total['5'] += $total_appro['total']['5'] - $total_ver['total']['5'];
-                $table_total['50'] += $total_appro['total']['50'] - $total_ver['total']['50'];
-
-
-
-        return view('commune.totalRecap', [
-                'table_total'=>  $table_total,
-            'values' => $values,
-            'commune_name' => $name,
-            'total_appro' => $total_appro,
-            'total_ver' => $total_ver,
-            'selectedYear' => $selectedYear,
-        ]);
 
     }
 
+    public function type(Request $request, $name, $annee)
+    {
+        $table_total = ['0.5' => 0, '1' => 0, '2' => 0,'7'=>0, '5' => 0, '50' => 0];         $values = ['0.5','1', '5','7', '2', '50'];
+        $total_appro = [];        $total_ver = [];
+        $table_mois = array_fill_keys([
+            'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+            'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+        ], array_fill_keys($values, 0));
+        $table_total_mois = array_fill_keys($values, 0);
+        $reste = [];
+        switch ($request->type) {
+            case 'approvisionnement':
+                $table_name = 'a_p_p_r_o_v_i_s_i_o_n_n_e_m_e_n_t_s';
+                $typeRegisseur = 'approvisionnement';
+                break;
+            case 'versement':
+                $table_name = 'v_e_r_s_e_m_e_n_t_s';
+                $typeRegisseur = 'versement';
+                break;
+        }
+        $commune = commune::where('name', $request->name)->first();
+        $regis=$commune->regisseurs()->get();
+        $type = $request->type;
+        if($type=='reste'){
+            //Approvisionnement
+            foreach ($regis as $regi) {
+                foreach ($values as $value) {
+                    $column = "`" . $value . "`";
+                    $total_appro[$regi->id][$value] = DB::table('totals')
+                        ->where('regisseur_id', $regi->id)
+                        ->where('annee', $annee)
+                        ->where('type', 'approvisionnement')
+                        ->sum(DB::raw($column));
+                }
+            }
+            foreach ($values as $value) {
+                $total_sum = 0;
+                foreach ($total_appro as $regi->id => $appro) {
+                    if (isset($appro[$value])) {
+
+                        $total_sum += $appro[$value];
+                    }
+                }
+                $total_appro['total'][$value] = $total_sum;
+            }
+// Versement
+            $regis=$commune->regisseurs()->get();
+            foreach ($regis as $regi) {
+                foreach ($values as $value) {
+
+                    $column = "`" . $value . "`";
+                    $total_ver[$regi->id][$value] = DB::table('totals')
+                        ->where('regisseur_id', $regi->id)
+                        ->where('annee', $annee)
+                        ->where('type', 'versement')
+                        ->sum(DB::raw($column));
+                }
+            }
+            foreach ($values as $value) {
+                $total_sum = 0;
+                foreach ($total_ver as $regi->id => $ver) {
+                    if (isset($ver[$value])) {
+
+                        $total_sum += $ver[$value];
+                    }
+                }
+                $total_ver['total'][$value] = $total_sum;
+            }
+            //RESTE
+            $table_total['0.5'] += $total_appro['total']['0.5']- $total_ver['total']['0.5'];
+            $table_total['1'] += $total_appro['total']['1'] - $total_ver['total']['1'];
+            $table_total['2'] += $total_appro['total']['2'] - $total_ver['total']['2'];
+            $table_total['7'] += $total_appro['total']['7'] - $total_ver['total']['7'];
+            $table_total['5'] += $total_appro['total']['5'] - $total_ver['total']['5'];
+            $table_total['50'] += $total_appro['total']['50'] - $total_ver['total']['50'];
+
+            return view('commune.totalRecap', [
+                'table_total'=>  $table_total,
+                'values' => $values,
+                'commune_name' => $name,
+                'total_appro' => $total_appro,
+                'total_ver' => $total_ver,
+                'selectedYear' => $annee,
+            ]);
+
+        }
+        elseif($type=='approvisionnement' || $type=='versement'){
+            //RESTE
+            foreach ($regis as $regi) {
+                foreach ($values as $value) {
+                    $column = "`" . $value . "`";
+                    $reste[$regi->id][$value] = DB::table('recaps')
+                        ->where('regisseur_id', $regi->id)
+                        ->where('annee', $annee-1)
+                        ->where('type', $type)
+                        ->sum(DB::raw($column));
+                }
+            }
+
+            foreach ($values as $value) {
+                $total_sum = 0;
+                foreach ($reste as $regi->id => $appro) {
+                    if (isset($appro[$value])) {
+
+                        $total_sum += $appro[$value];
+                    }
+                }
+                $reste['total'][$value] = $total_sum;
+            }
+
+        // Colonne des mois pour chaque régisseur
+            foreach ($regis as $regi) {
+                    $table = DB::table($table_name)
+                        ->where('regisseur_id', $regi->id)
+                        ->where('annee', $annee)
+                        ->orderBy('id')
+                        ->get();
+
+                    foreach ($table as $mois) {
+                        foreach ($values as $value) {
+                            $table_mois[$mois->mois][$value] += $mois->$value;
+                        }
+                    }
+            }
+
+            // total ligne derniere
+            foreach ($regis as $regi) {
+                foreach ($values as $value) {
+                    $column = "`" . $value . "`";
+                    $total_appro[$regi->id][$value] = DB::table('totals')
+                        ->where('regisseur_id', $regi->id)
+                        ->where('annee', $annee)
+                        ->where('type', $type)
+                        ->sum(DB::raw($column));
+                }
+            }
+
+            foreach ($values as $value) {
+                $total_sum = 0;
+                foreach ($total_appro as $regi->id => $appro) {
+                    if (isset($appro[$value])) {
+
+                        $total_sum += $appro[$value];
+                    }
+                }
+                $total_appro['total'][$value] = $total_sum;
+            }
+        }
+
+        return view('commune.totale', [
+            'reste' => $reste,
+            'typeRegisseur'=>$type,
+            'table_mois' => $table_mois,
+            'values' => $values,
+            'commune_name' => $name,
+            'total_appro' => $total_appro,
+            'annee' => $annee,
+            'type' => $type,
+        ]);
+
+
+    }
     /**
      * Show the form for editing the specified resource.
      */

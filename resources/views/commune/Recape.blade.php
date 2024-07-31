@@ -40,7 +40,7 @@
                             <th scope="row" class="text-center">Approvisionnement</th>
                             @foreach($values as $value)
                                 <td class="text-center py-4 border-b border-gray-300">
-                                    {{ $sum->{$value} ?? 0 }}
+                                    {{number_format( ( $sum->{$value} ?? 0 ) ?? 0, 2, ',', ' ')}}
                                 </td>
                             @endforeach
                         </tr>
@@ -57,7 +57,7 @@
                             <th scope="row" class="text-center">Versement</th>
                             @foreach($values as $value)
                                 <td class="text-center py-4 border-b border-gray-300">
-                                    {{ $sum->{$value} ?? 0 }}
+                                    {{   number_format( ($sum->{$value} ?? 0) ?? 0, 2, ',', ' ')}}
                                 </td>
                             @endforeach
                         </tr>
@@ -68,7 +68,7 @@
                     <th scope="row" class="text-center">Reste</th>
                     @foreach($values as $value)
                         <td class="text-center py-4 border-b border-gray-300">
-                            {{ ($approvisionnementTotals[$value] ?? 0) - ($versementTotals[$value] ?? 0) }}
+                            {{ number_format(($approvisionnementTotals[$value] ?? 0) - ($versementTotals[$value] ?? 0) ?? 0, 2, ',', ' ') }}
                         </td>
                     @endforeach
                 </tr>

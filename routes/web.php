@@ -19,6 +19,7 @@ Route::controller(RegisseurController::class)->group(function (){
     Route::post('/Regisseur/chez_tp/{nomCom}', 'ChezTP');
     Route::post('/{typeRegisseur}/{annee}/{IDRegisseur}/{commune_Name}',  'store');
     Route::post('/show/{name}', 'show');
+    Route::post('/type/{name}/{anne}', 'type');
 
 });
 

@@ -69,58 +69,82 @@ class TotalController extends Controller
             ->where('region', $request->region)
             ->get();
 
+
         foreach ($commune as $comu) {
             $regisseurs = $comu->regisseurs()->get();
+if ($request->typeRegisseur == 'approvisionnement' || $request->typeRegisseur == 'versement') {
+    foreach ($regisseurs as $regi) {
+        $table = DB::table($table_name)
+            ->where('regisseur_id', $regi->id)
+            ->where('annee', $annee)
+            ->orderBy('id')
+            ->get();
 
-            foreach ($regisseurs as $regi) {
-                $table = DB::table($table_name)
-                    ->where('regisseur_id', $regi->id)
-                    ->where('annee', $annee)
-                    ->orderBy('id')
-                    ->get();
+        foreach ($table as $mois) {
+            foreach ($values as $value) {
+                $table_mois[$mois->mois][$value] += $mois->$value;
+            }
+        }
 
-                foreach ($table as $mois) {
-                    foreach ($values as $value) {
-                        $table_mois[$mois->mois][$value] += $mois->$value;
-                    }
+        $tableT[$regi->id] = DB::table('totals')
+            ->where('regisseur_id', $regi->id)
+            ->where('type', $typeRegisseur)
+            ->where('annee', $annee)
+            ->orderBy('id')
+            ->get();
+
+        $tableTotal = DB::table('totals')
+            ->where('regisseur_id', $regi->id)
+            ->where('annee', $annee - 1)
+            ->whereIn('type', ['approvisionnement', 'versement'])
+            ->orderBy('type')
+            ->get();
+
+        if ($request->typeRegisseur == 'chez_tp') {
+            $tableTotalTP = DB::table('total_tps')
+                ->where('regisseur_id', $regi->id)
+                ->where('annee', $annee - 1)
+                ->whereIn('type', ['approvisionnement', 'chez_tp'])
+                ->orderBy('type')
+                ->get();
+
+            if ($tableTotalTP->count() == 2 ) {
+                foreach ($values as $value) {
+                    $resteTP[$value] += $tableTotalTP[1]->$value - $tableTotalTP[0]->$value;
                 }
-
-                $tableT[$regi->id] = DB::table('totals')
-                    ->where('regisseur_id', $regi->id)
-                    ->where('type', $typeRegisseur)
-                    ->where('annee', $annee)
-                    ->orderBy('id')
-                    ->get();
-
-                $tableTotal = DB::table('totals')
+            }
+        }
+        if ($tableTotal->count() == 2) {
+            foreach ($values as $value) {
+                $reste[$value] += $tableTotal[0]->$value - $tableTotal[1]->$value;
+            }
+        }
+        foreach ($regisseurs as $regi){
+            if ($request->typeRegisseur == 'chez_tp') {
+                $tableTotalTP = DB::table('total_tps')
                     ->where('regisseur_id', $regi->id)
                     ->where('annee', $annee - 1)
-                    ->whereIn('type', ['approvisionnement', 'versement'])
+                    ->whereIn('type', ['approvisionnement', 'chez_tp'])
                     ->orderBy('type')
                     ->get();
 
-                if ($request->typeRegisseur == 'chez_tp') {
-                    $tableTotalTP = DB::table('totals')
-                        ->where('regisseur_id', $regi->id)
-                        ->where('annee', $annee - 1)
-                        ->whereIn('type', ['approvisionnement', 'chez_tp'])
-                        ->orderBy('type')
-                        ->get();
-
-                    if ($tableTotalTP->count() == 2 ) {
-                        foreach ($values as $value) {
-                            $resteTP[$value] += $tableTotalTP[1]->$value - $tableTotalTP[0]->$value;
-                        }
-                    }
-                }
-                if ($tableTotal->count() == 2) {
+                if ($tableTotalTP->count() == 2 ) {
                     foreach ($values as $value) {
-                        $reste[$value] += $tableTotal[0]->$value - $tableTotal[1]->$value;
+                        $resteTP[$value] += $tableTotalTP[1]->$value - $tableTotalTP[0]->$value;
                     }
                 }
-
+            }
+            if ($tableTotal->count() == 2) {
+                foreach ($values as $value) {
+                    $reste[$value] += $tableTotal[0]->$value - $tableTotal[1]->$value;
+                }
             }
         }
+
+    }
+}
+}
+
 
         foreach ($tableT as $item) {
             foreach ($item as $value) {
@@ -161,7 +185,7 @@ class TotalController extends Controller
         $repriseAPP = collect();
         $repriseAPP_TP=[];
 
-        if ($typeRegisseur == 'approvisionnement') {
+        if ($typeRegisseur == 'approvisionnement' || $typeRegisseur == 'versement') {
             $check = DB::table('totals')
                 ->where('regisseur_id', $IDRegisseur)
                 ->where('annee', $annee)
@@ -171,7 +195,7 @@ class TotalController extends Controller
             $repriseAPP = DB::table('recaps')
                 ->where('regisseur_id', $IDRegisseur)
                 ->where('annee', $annee - 1)
-                ->whereIn('type', ['approvisionnement'])
+                ->whereIn('type', [$typeRegisseur])
                 ->orderBy('id')
                 ->get();
             if ($check->isEmpty()) {
@@ -183,7 +207,7 @@ class TotalController extends Controller
 
                 foreach ($keysToFetch as $key) {
 
-                    $newValue = $totalAnnuel[$key] + ($repriseAPP->isNotEmpty() ? $repriseAPP[0]->{$key} : 0) + ($repriseTp->isNotEmpty() ? $repriseTp[0]->{$key} : 0);
+                    $newValue = $totalAnnuel[$key] + ($repriseAPP->isNotEmpty() ? $repriseAPP[0]->{$key} : 0);
                     $varId = $var->id;
                     $sql = "UPDATE `totals` SET `$key` = ?, `updated_at` = ? WHERE `id` = ?";
                     DB::statement($sql, [$newValue, now(), $varId]);
@@ -239,8 +263,7 @@ class TotalController extends Controller
                 } }
             foreach ($keysToFetch as $value) {
                 $total_sum = 0;
-
-                foreach ($repriseAPP as $regi->id => $appro) {
+                foreach ($repriseAPP_TP as $regi->id => $appro) {
                     if (isset($appro[$value])) {
                         $total_sum += $appro[$value];
                     }
@@ -275,9 +298,7 @@ class TotalController extends Controller
                         'annee' => $annee,
                         'commune_id' => $com->id,
                     ]);
-
                     foreach ($keysToFetch as $key) {
-
                         $newValue = $totalAnnuel[$key] +(!isEmpty($repriseAPP_TP)  ? $repriseAPP_TP['total'][$key]  : 0)  + ($repriseTp->isNotEmpty() ? $repriseTp[0]->{$key} : 0);
                         $varId = $var->id;
                         $sql = "UPDATE `total_tps` SET `$key` = ?, `updated_at` = ? WHERE `id` = ?";
@@ -286,6 +307,7 @@ class TotalController extends Controller
                 }
             }
         }
+      //  dd($totalAnnuel, $repriseAPP_TP, $repriseTp);
 
 
         $recapController = new RecapController();

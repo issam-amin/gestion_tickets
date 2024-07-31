@@ -15,7 +15,7 @@
                 @foreach($values as $value)
                     <th scope="col">{{ $value }}</th>
                 @endforeach
-
+                <th scope="col">SOMME</th>
             </tr>
 
             </thead>
@@ -25,9 +25,12 @@
                 <th scope="row" class="text-center">Approvisionnement</th>
                 @foreach($values as $value)
                     <td class="text-center py-4 border-b border-gray-300">
-                        {{ $total_appro['total'][$value] ?? 0 }}
+                        {{  number_format($total_appro['total'][$value] ?? 0, 2, ',', ' ')}}
                     </td>
                 @endforeach
+                <td class="text-center py-4 border-b border-gray-300">
+                    {{ number_format(array_sum($total_appro['total'])  ?? 0, 2, ',', ' ') }}
+                </td>
             </tr>
 
 
@@ -36,9 +39,12 @@
                 <th scope="row" class="text-center">Versement</th>
                 @foreach($values as $value)
                     <td class="text-center py-4 border-b border-gray-300">
-                        {{ $total_ver['total'][$value] ?? 0 }}
+                        {{ number_format($total_ver['total'][$value] ?? 0, 2, ',', ' ')}}
                     </td>
                 @endforeach
+                <td class="text-center py-4 border-b border-gray-300">
+                    {{ number_format(array_sum($total_ver['total'])  ?? 0, 2, ',', ' ') }}
+                </td>
             </tr>
 
 
@@ -46,9 +52,12 @@
                 <th scope="row" class="text-center">Reste</th>
                 @foreach($values as $value)
                     <td class="text-center py-4 border-b border-gray-300">
-                        {{ ($table_total[$value] ?? 0)  }}
+                        {{ number_format($table_total[$value]  ?? 0, 2, ',', ' ') }}
                     </td>
                 @endforeach
+                <td class="text-center py-4 border-b border-gray-300">
+                    {{ number_format(array_sum($table_total)  ?? 0, 2, ',', ' ') }}
+                </td>
             </tr>
 
             </tbody>
