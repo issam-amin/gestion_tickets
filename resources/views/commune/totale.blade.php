@@ -34,11 +34,11 @@
                 <th scope="row" class="text-center" style=" color: #fc8181;">Reprise de l'Année Précédente ({{$annee -1}})</th>
                 @foreach($values as $value)
                     <td class="text-center py-4 border-b border-gray-300 " style=" color: #fc8181;">
-                        {{ isset( $reste['total'][$value]) ? $reste['total'][$value]/$value : 0 }}
+                        {{ isset( $reste['total'][$value]) ?   number_format($reste['total'][$value]/$value, 2, ',', ' ') : 0 }}
                     </td>
                 @endforeach
 
-                <td class="px-6 py-4 border-b border-gray-300 font-extrabold" style=" color: #ff1a1a;">{{array_sum($reste['total'])}}</td>
+                <td class="px-6 py-4 border-b border-gray-300 font-extrabold" style=" color: #ff1a1a;">{{  number_format(array_sum($reste['total']), 2, ',', ' ') }}</td>
             </tr>
             @endif
             @foreach($table_mois as $mois => $values)
@@ -52,7 +52,7 @@
                             $somme += $value*floatval($key);
                         @endphp
                     @endforeach
-                    <td class="px-6 py-4 border-b border-gray-300 text-center">{{ floatval($somme) }}</td>
+                    <td class="px-6 py-4 border-b border-gray-300 text-center">{{  number_format(floatval($somme)?? 0, 2, ',', ' ') }}</td>
                     @php
                         $somme = 0;
                     @endphp
@@ -67,7 +67,7 @@
                     </td>
                 @endforeach
                 <td class="px-6 py-4 border-b border-gray-300 text-center">
-                    {{ array_sum($total_appro['total']) }}
+                    {{   number_format(array_sum($total_appro['total'])?? 0, 2, ',', ' ') }}
                 </td>
             </tr>
             </tbody>

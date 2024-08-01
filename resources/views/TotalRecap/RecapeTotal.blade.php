@@ -18,7 +18,7 @@
         <table class="table table-striped table-hover table-sm" style="width: 80%; margin: auto;">
             <thead>
             <tr>
-                <th scope="row" colspan="7" class="text-center">{{ strtoupper($typeRegisseur) }} REGISSEURS</th>
+                <th scope="row" colspan="8" class="text-center">{{ strtoupper($typeRegisseur) }} REGISSEURS</th>
             </tr>
             <tr class="text-center">
                 <th scope="col">Mois</th>
@@ -37,21 +37,21 @@
                 <th scope="row" class="text-center" style=" color: #fc8181;">Reprise TP ({{$annee -1}})</th>
                 @foreach($values as $value)
                     <td class="text-center py-4 border-b border-gray-300 " style=" color: #fc8181;">
-                        {{ isset( $resteTP[$value]) ? $resteTP[$value] : 0 }}
+                        {{ isset( $resteTP['total']) ? $resteTP['total'][$value] : 0 }}
                     </td>
                 @endforeach
-                <td class="px-6 py-4 border-b border-gray-300 font-extrabold" style=" color: #ff1a1a;">{{array_sum($resteTP)}}</td>
+                <td class="px-6 py-4 border-b border-gray-300 font-extrabold" style=" color: #ff1a1a;">{{array_sum($resteTP['total'])}}</td>
             @endif
             @if($typeRegisseur=="approvisionnement" || $typeRegisseur=="chez_tp")
             <tr>
                 <th scope="row" class="text-center" style=" color: #fc8181;">Reprise de l'Année Précédente ({{$annee -1}})</th>
                 @foreach($values as $value)
                     <td class="text-center py-4 border-b border-gray-300 " style=" color: #fc8181;">
-                        {{ isset( $table_total[$value]) ? $table_total[$value] : 0 }}
+                        {{ isset( $reste['total']) ? $reste['total'][$value] : 0 }}
                     </td>
                 @endforeach
 
-                <td class="px-6 py-4 border-b border-gray-300 font-extrabold" style=" color: #ff1a1a;">{{array_sum($table_total)}}</td>
+                <td class="px-6 py-4 border-b border-gray-300 font-extrabold" style=" color: #ff1a1a;">{{array_sum($reste['total'])}}</td>
             </tr>
             @endif
             @foreach($table_mois as $mois => $values)

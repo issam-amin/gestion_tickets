@@ -86,6 +86,7 @@ class RecapController extends Controller
 
           //  $totalAPP
             $regis = $com->regisseurs()->get();
+
             foreach ($regis as $regi) {
                 foreach ($keysToFetch as $value) {
                     $column = $value;
@@ -98,7 +99,6 @@ class RecapController extends Controller
 
                 }
             }
-
             foreach ($keysToFetch as $value) {
                 $total_sum = 0;
                 foreach ($totalAPP as $regi->id => $appro) {
@@ -109,7 +109,6 @@ class RecapController extends Controller
                 }
                 $totalAPP['total'][$value] = $total_sum;
             }
-
             $values = ['0.5', '1', '5', '2', '50'];
             foreach ($values as $value) {
                 $reste[$value] += ($totalTP->first()->{$value} ?? 0)-($totalAPP['total'][$value] ?? 0);

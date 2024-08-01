@@ -38,15 +38,17 @@ class TotalController extends Controller
    }
     public function display(Request $request): Application|Factory|View
     {
-        $values = ['0.5', '1', '5', '2', '50'];
+        $table = [];
+        $tableT = [];
+        $values = ['0.5', 1, 2, 7, 5, 50];
         $table_mois = array_fill_keys([
             'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
             'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
         ], array_fill_keys($values, 0));
 
         $table_total_mois = array_fill_keys($values, 0);
-        $reste = array_fill_keys($values, 0);
-        $resteTP = array_fill_keys($values, 0);
+        $reste =[];
+        $resteTP = [];
 
 
         switch ($request->typeRegisseur) {
@@ -72,90 +74,169 @@ class TotalController extends Controller
 
         foreach ($commune as $comu) {
             $regisseurs = $comu->regisseurs()->get();
+
+
 if ($request->typeRegisseur == 'approvisionnement' || $request->typeRegisseur == 'versement') {
     foreach ($regisseurs as $regi) {
-        $table = DB::table($table_name)
-            ->where('regisseur_id', $regi->id)
-            ->where('annee', $annee)
-            ->orderBy('id')
-            ->get();
-
-        foreach ($table as $mois) {
-            foreach ($values as $value) {
-                $table_mois[$mois->mois][$value] += $mois->$value;
-            }
-        }
-
-        $tableT[$regi->id] = DB::table('totals')
-            ->where('regisseur_id', $regi->id)
-            ->where('type', $typeRegisseur)
-            ->where('annee', $annee)
-            ->orderBy('id')
-            ->get();
-
-        $tableTotal = DB::table('totals')
-            ->where('regisseur_id', $regi->id)
-            ->where('annee', $annee - 1)
-            ->whereIn('type', ['approvisionnement', 'versement'])
-            ->orderBy('type')
-            ->get();
-
-        if ($request->typeRegisseur == 'chez_tp') {
-            $tableTotalTP = DB::table('total_tps')
-                ->where('regisseur_id', $regi->id)
-                ->where('annee', $annee - 1)
-                ->whereIn('type', ['approvisionnement', 'chez_tp'])
-                ->orderBy('type')
-                ->get();
-
-            if ($tableTotalTP->count() == 2 ) {
-                foreach ($values as $value) {
-                    $resteTP[$value] += $tableTotalTP[1]->$value - $tableTotalTP[0]->$value;
-                }
-            }
-        }
-        if ($tableTotal->count() == 2) {
-            foreach ($values as $value) {
-                $reste[$value] += $tableTotal[0]->$value - $tableTotal[1]->$value;
-            }
-        }
-        foreach ($regisseurs as $regi){
-            if ($request->typeRegisseur == 'chez_tp') {
-                $tableTotalTP = DB::table('total_tps')
+                $table = DB::table($table_name)
                     ->where('regisseur_id', $regi->id)
-                    ->where('annee', $annee - 1)
-                    ->whereIn('type', ['approvisionnement', 'chez_tp'])
-                    ->orderBy('type')
+                    ->where('annee', $annee)
+                    ->orderBy('id')
                     ->get();
 
-                if ($tableTotalTP->count() == 2 ) {
+                foreach ($table as $mois) {
                     foreach ($values as $value) {
-                        $resteTP[$value] += $tableTotalTP[1]->$value - $tableTotalTP[0]->$value;
+                        $table_mois[$mois->mois][$value] += $mois->$value;
                     }
                 }
-            }
-            if ($tableTotal->count() == 2) {
-                foreach ($values as $value) {
-                    $reste[$value] += $tableTotal[0]->$value - $tableTotal[1]->$value;
-                }
-            }
+        //la derniere ligne
+                $tableT[$regi->id] = DB::table('totals')
+                    ->where('regisseur_id', $regi->id)
+                    ->where('type', $typeRegisseur)
+                    ->where('annee', $annee)
+                    ->orderBy('id')
+                    ->get();
+        //RESTE
+        foreach ($values as $value) {
+            $column = "`" . $value . "`";
+            $reste[$regi->id][$value] = DB::table('recaps')
+                ->where('regisseur_id', $regi->id)
+                ->where('annee', $annee-1)
+                ->where('type', $request->typeRegisseur)
+                ->sum(DB::raw($column));
         }
+
+
 
     }
 }
+elseif ($request->typeRegisseur == 'chez_tp') {
+    // reste chez app
+    foreach ($regisseurs as $regi) {
+        foreach ($values as $value) {
+            $column = $value;
+            $reste[$regi->id][$value] = DB::table('recaps')
+                ->where('regisseur_id', $regi->id)
+                ->where('annee', $annee-1)
+                ->where('type', 'approvisionnement')
+                ->sum(DB::raw("`$column`"));
+        }
+
+    }
+// ligne des mois
+    $table[$comu->id] = DB::table($table_name)
+        ->where('commune_id', $comu->id)
+        ->where('annee', $annee)
+        ->get();
+
+    // ligne chez tp
+    foreach ($values as $value) {
+        $column = "`" . $value . "`";
+        $resteTP[$comu->id][$value] = DB::table('recap_tps')
+            ->where('commune_id', $comu->id)
+            ->where('annee', $annee-1)
+            ->where('type', $request->typeRegisseur)
+            ->sum(DB::raw($column));
+    }
+
+//la derniere ligne
+    $tableT[$comu->id] = DB::table('total_tps')
+        ->where('commune_id', $comu->id)
+        ->where('type', $typeRegisseur)
+        ->where('annee', $annee)
+        ->orderBy('id')
+        ->get();
+
+
 }
 
+}
+        if ($request->typeRegisseur == 'approvisionnement' || $request->typeRegisseur == 'versement') {
+            //RESTE APP
+            foreach ($values as $value) {
+                $total_sum = 0;
+                foreach ($reste as $regi->id => $appro) {
+                    if (isset($appro[$value])) {
 
-        foreach ($tableT as $item) {
-            foreach ($item as $value) {
-                foreach ($values as $val) {
-                    $table_total_mois[$val] += $value->$val;
+                        $total_sum += $appro[$value];
+                    }
+                }
+                $reste['total'][$value] = $total_sum;
+            }
+
+//la derniere ligne
+            foreach ($tableT as $item) {
+                foreach ($item as $value) {
+                    foreach ($values as $val) {
+                        $table_total_mois[$val] += $value->$val;
+                    }
                 }
             }
+
+        }
+        elseif ($request->typeRegisseur == 'chez_tp') {
+            //RESTE TP
+            foreach ($values as $value) {
+                $total_sum = 0;
+                foreach ($resteTP as $comu->id => $appro) {
+                    if (isset($appro[$value])) {
+
+                        $total_sum += $appro[$value];
+                    }
+                }
+                $resteTP['total'][$value] = $total_sum;
+            }
+//  Initialize the values to zero
+            foreach ($table as $data) {
+                foreach ($data as $mois) {
+                    foreach ($values as $value) {
+                        // Initialize the values to zero
+                        if (!isset($table_mois[$mois->mois][$value])) {
+                            $table_mois[$mois->mois][$value] = 0;
+                        }
+                    }
+                }
+            }
+
+// Aggregate values for each month
+            foreach ($table as $data) {
+                foreach ($data as $mois) {
+                    foreach ($values as $value) {
+                        $table_mois[$mois->mois][$value] += $mois->$value;
+                    }
+                }
+            }
+
+
+            //RESTE APP
+            foreach ($values as $value) {
+                $total_sum = 0;
+                foreach ($reste as $regi->id => $appro) {
+                    if (isset($appro[$value])) {
+
+                        $total_sum += $appro[$value];
+                    }
+                }
+                $reste['total'][$value] = $total_sum;
+            }
+
+//la derniere ligne
+            foreach ($tableT as $item) {
+                foreach ($item as $value) {
+                    foreach ($values as $val) {
+                        $table_total_mois[$val] += $value->$val;
+                    }
+                }
+            }
+
         }
 
 
+
+
+
         return view('TotalRecap.RecapeTotal', [
+            'reste' => $reste,
             'annee' => $annee,
             'table_total' => $reste,
             'resteTP' => $resteTP,
@@ -165,6 +246,7 @@ if ($request->typeRegisseur == 'approvisionnement' || $request->typeRegisseur ==
             'table_mois' => $table_mois
         ]);
     }
+
 
 
     /**
@@ -270,13 +352,7 @@ if ($request->typeRegisseur == 'approvisionnement' || $request->typeRegisseur ==
                 }
                 $repriseAPP_TP['total'][$value] = $total_sum;
             }
-
-
-
-
-
-
-            if ($check->isEmpty()) {
+                  if ($check->isEmpty()) {
                 $var = TotalTp::create([
                     'type' => $typeRegisseur,
                     'annee' => $annee,
@@ -299,7 +375,7 @@ if ($request->typeRegisseur == 'approvisionnement' || $request->typeRegisseur ==
                         'commune_id' => $com->id,
                     ]);
                     foreach ($keysToFetch as $key) {
-                        $newValue = $totalAnnuel[$key] +(!isEmpty($repriseAPP_TP)  ? $repriseAPP_TP['total'][$key]  : 0)  + ($repriseTp->isNotEmpty() ? $repriseTp[0]->{$key} : 0);
+                        $newValue = $totalAnnuel[$key] +( $repriseAPP_TP['total'][$key] ?? 0)  + ($repriseTp->isNotEmpty() ? $repriseTp[0]->{$key} : 0);
                         $varId = $var->id;
                         $sql = "UPDATE `total_tps` SET `$key` = ?, `updated_at` = ? WHERE `id` = ?";
                         DB::statement($sql, [$newValue, now(), $varId]);
@@ -307,8 +383,7 @@ if ($request->typeRegisseur == 'approvisionnement' || $request->typeRegisseur ==
                 }
             }
         }
-      //  dd($totalAnnuel, $repriseAPP_TP, $repriseTp);
-
+         //dd($totalAnnuel, $repriseAPP_TP, $repriseTp);
 
         $recapController = new RecapController();
         $recapController->store($typeRegisseur, $annee, $IDRegisseur,$nomcom);
