@@ -236,6 +236,7 @@ elseif ($request->typeRegisseur == 'chez_tp') {
 
 
         return view('TotalRecap.RecapeTotal', [
+            'region' => $request->region,
             'reste' => $reste,
             'annee' => $annee,
             'table_total' => $reste,
@@ -352,7 +353,7 @@ elseif ($request->typeRegisseur == 'chez_tp') {
                 }
                 $repriseAPP_TP['total'][$value] = $total_sum;
             }
-                  if ($check->isEmpty()) {
+            if ($check->isEmpty()) {
                 $var = TotalTp::create([
                     'type' => $typeRegisseur,
                     'annee' => $annee,
@@ -360,13 +361,18 @@ elseif ($request->typeRegisseur == 'chez_tp') {
                 ]);
 
                 foreach ($keysToFetch as $key) {
+                    // Calculate the new value
+                    $newValue = $totalAnnuel[$key]
+                        + (!empty($repriseAPP_TP) ? $repriseAPP_TP['total'][$key] : 0)
+                        + ($repriseTp->isNotEmpty() ? $repriseTp[0]->{$key} : 0);
 
-                    $newValue = $totalAnnuel[$key] +(!isEmpty($repriseAPP_TP) ? $repriseAPP_TP['total'][$key] : 0)+ ($repriseTp->isNotEmpty() ? $repriseTp[0]->{$key} : 0);
+                    // Update the record in the database
                     $varId = $var->id;
                     $sql = "UPDATE `total_tps` SET `$key` = ?, `updated_at` = ? WHERE `id` = ?";
                     DB::statement($sql, [$newValue, now(), $varId]);
                 }
-            } else {
+            }
+            else {
                 foreach ($check as $item) {
                     $var = TotalTp::find($item->id);
                     $var->update([
@@ -375,7 +381,8 @@ elseif ($request->typeRegisseur == 'chez_tp') {
                         'commune_id' => $com->id,
                     ]);
                     foreach ($keysToFetch as $key) {
-                        $newValue = $totalAnnuel[$key] +( $repriseAPP_TP['total'][$key] ?? 0)  + ($repriseTp->isNotEmpty() ? $repriseTp[0]->{$key} : 0);
+                        $newValue = $totalAnnuel[$key] +( $repriseAPP_TP['total'][$key] ?? 0)  +
+                            ($repriseTp->isNotEmpty() ? $repriseTp[0]->{$key} : 0);
                         $varId = $var->id;
                         $sql = "UPDATE `total_tps` SET `$key` = ?, `updated_at` = ? WHERE `id` = ?";
                         DB::statement($sql, [$newValue, now(), $varId]);

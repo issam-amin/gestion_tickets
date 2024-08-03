@@ -32,7 +32,7 @@ class RegisseurController extends Controller
         }
 
         $commune_Name = $regisseur->commune()->first()->name;
-
+        $region=$regisseur->commune()->first()->region;
         $values = ['0.5', '1', '5','7', '2', '50'];
         $months = [
             'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
@@ -110,7 +110,7 @@ class RegisseurController extends Controller
 
 
         return view('/commune/'.$request->typeRegi, [
-
+                'region'=>$region,
             'IDRegisseur' => $request->regisseurs,
             'typeRegisseur' => $request->typeRegi,
             'values' => $values,
@@ -140,6 +140,7 @@ class RegisseurController extends Controller
             'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
         ];
         $com = commune::where('name', $nom)->first();
+        $region=$com->region;
 // recap Tp
         $repriseTp = DB::table('recap_tps')
             ->where('commune_id', $com->id)
@@ -202,6 +203,7 @@ class RegisseurController extends Controller
         $valeurtotal = number_format($valeurtotal ?? 0, 2, ',', ' ');
 
         return view('/commune/chez_tp', [
+            'region'=>$region,
             'IDRegisseur' => $request->regisseurs,
             'typeRegisseur' => 'chez_tp',
             'values' => $values,
@@ -496,8 +498,8 @@ class RegisseurController extends Controller
                 }
                 $reste['total'][$value] = $total_sum;
             }
-
         // Colonne des mois pour chaque régisseur
+            $regis=$commune->regisseurs()->get();
             foreach ($regis as $regi) {
                     $table = DB::table($table_name)
                         ->where('regisseur_id', $regi->id)

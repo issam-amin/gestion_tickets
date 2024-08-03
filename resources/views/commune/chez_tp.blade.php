@@ -89,7 +89,7 @@
                     <th scope="row" class="text-center bg-gray-100">TOTAL</th>
                     @foreach($values as $value)
                         <td class="px-6 py-4 border-b border-gray-300 text-center">
-                            {{ $total_annuel->{$value} ?? '0' }}
+                            {{ number_format($total_annuel->{$value} ?? '0', 2, ',', ' ') }}
                         </td>
                         <input type="hidden" name="total_annuel[{{ $value }}]"
                                value="{{ $total_annuel->{$value} ?? '0' }}">
@@ -103,7 +103,7 @@
         </div>
 
         <div class="flex items-center justify-between mt-6">
-            <a href="/commune/{{$commune_Name}}"
+            <a href="/commune/{{$region}}"
                class="text-sm font-semibold leading-6 text-gray-900 hover:text-indigo-600 transition duration-200 ease-in-out">
                 Cancel
             </a>

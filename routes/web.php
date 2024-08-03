@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\CommuneController;
 use App\Http\Controllers\RegisseurController;
+use App\Http\Controllers\RegisteredUserController;
+use App\Http\Controllers\SessionController;
 use App\Http\Controllers\TotalController;
 use Illuminate\Support\Facades\Route;
 
@@ -10,8 +12,9 @@ Route::get('/', function () {
     return view('home');
 });
 Route::controller(communeController::class)->group(function (){
-    Route::get('/commune/{type}','index');
+        Route::get('/commune/{type}','index');
     Route::get('/commune/{region}/{id}', 'show');
+    Route::get('{region}/{typeRegisseur}/{annee}', 'restToT');
 });
 
 Route::controller(RegisseurController::class)->group(function (){
@@ -32,4 +35,13 @@ Route::controller(TotalController::class)->group(function (){
 });
 
 Route::view('/Trecap','/TotalRecap/Trecap');
+//Authentification
+Route::get('/register',[RegisteredUserController::class, 'create']);
+//->only(['create','store']
+Route::post('/register',[RegisteredUserController::class, 'store']);
 
+
+//login
+Route::get('/login',[SessionController::class, 'create'])->name('login');
+Route::post('/login',[SessionController::class, 'store']);
+Route::post('/logout',[SessionController::class, 'destroy']);

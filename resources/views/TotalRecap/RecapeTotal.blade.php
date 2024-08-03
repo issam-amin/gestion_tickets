@@ -1,15 +1,10 @@
 <x-layout>
     <x-slot name="headings">
-        {{-- Uncomment and modify the following section if needed
-        <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-            <div class="text-xl font-bold text-gray-800 mb-4">Tableau de Commune Urbaine : {{$cu_name}}</div>
-            <div class="bg-white shadow-md rounded-lg p-6 flex flex-col sm:flex-row sm:justify-between items-center">
-                <div class="font-extrabold text-blue-900 mr-4 mb-4 sm:mb-0">Regisseur de : "{{$name}}"</div>
 
-            </div>
-        --}}
+
+
         <div class="font-extrabold text-blue-500 ml-4 mb-4 sm:mb-0">  {{ucfirst($typeRegisseur)}} de L'année : {{$annee}}</div>
-
+        <x-button class="bg-blue-500 hover:bg-blue-700 text-black font-bold py-2 px-4 rounded" href="{{$region}}/{{$typeRegisseur}}/{{$annee}}">Voir Recap</x-button>
     </x-slot>
 
     <form method="POST" action="#">
@@ -37,21 +32,23 @@
                 <th scope="row" class="text-center" style=" color: #fc8181;">Reprise TP ({{$annee -1}})</th>
                 @foreach($values as $value)
                     <td class="text-center py-4 border-b border-gray-300 " style=" color: #fc8181;">
-                        {{ isset( $resteTP['total']) ? $resteTP['total'][$value] : 0 }}
+                        {{  number_format($resteTP['total'][$value]  ?? 0, 2, ',', ' ')}}
                     </td>
                 @endforeach
-                <td class="px-6 py-4 border-b border-gray-300 font-extrabold" style=" color: #ff1a1a;">{{array_sum($resteTP['total'])}}</td>
+                <td class="px-6 py-4 border-b border-gray-300 font-extrabold" style=" color: #ff1a1a;">
+                    {{number_format(array_sum($resteTP['total'])   ?? 0, 2, ',', ' ')}} </td>
             @endif
             @if($typeRegisseur=="approvisionnement" || $typeRegisseur=="chez_tp")
             <tr>
                 <th scope="row" class="text-center" style=" color: #fc8181;">Reprise de l'Année Précédente ({{$annee -1}})</th>
                 @foreach($values as $value)
                     <td class="text-center py-4 border-b border-gray-300 " style=" color: #fc8181;">
-                        {{ isset( $reste['total']) ? $reste['total'][$value] : 0 }}
+                        {{ number_format($reste['total'][$value]  ?? 0, 2, ',', ' ') }}
                     </td>
                 @endforeach
 
-                <td class="px-6 py-4 border-b border-gray-300 font-extrabold" style=" color: #ff1a1a;">{{array_sum($reste['total'])}}</td>
+                <td class="px-6 py-4 border-b border-gray-300 font-extrabold" style=" color: #ff1a1a;">
+                    {{number_format(array_sum($reste['total'])   ?? 0, 2, ',', ' ')}}</td>
             </tr>
             @endif
             @foreach($table_mois as $mois => $values)
@@ -59,13 +56,13 @@
                     <th scope="row" class="text-center">{{ $mois }}</th>
                     @foreach($values as $key => $value)
                         <td class="px-6 py-4 border-b border-gray-300 text-center">
-                            {{ isset($value) ? $value : 0 }}
+                            {{         number_format($value  ?? 0, 2, ',', ' ') }}
                         </td>
                         @php
                             $somme += $value;
                         @endphp
                     @endforeach
-                    <td class="px-6 py-4 border-b border-gray-300 text-center">{{ $somme }}</td>
+                    <td class="px-6 py-4 border-b border-gray-300 text-center">{{  number_format($somme  ?? 0, 2, ',', ' ')}}</td>
                     @php
                         $somme = 0;
                     @endphp
@@ -76,12 +73,11 @@
                 <th scope="row" class="text-center">TOTAL</th>
                 @foreach($values as $key => $value)
                     <td class="px-6 py-4 border-b border-gray-300 text-center">
-                        {{ $table_total_mois[$key] ?? '0' }}
+                        {{ number_format($table_total_mois[$key] ?? '0', 2, ',', ' ') }}
                     </td>
                 @endforeach
                 <td class="px-6 py-4 border-b border-gray-300 text-center">
-                    {{ array_sum($table_total_mois) }}
-                </td>
+                 {{number_format(array_sum($table_total_mois)   ?? 0, 2, ',', ' ')}}</td>
             </tr>
             </tbody>
         </table>

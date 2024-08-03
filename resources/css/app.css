@@ -2,3 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Add this to your CSS file */
+.img-size {
+    width: 150px; /* Adjust the width as needed */
+    height: auto; /* Maintain aspect ratio */
+}

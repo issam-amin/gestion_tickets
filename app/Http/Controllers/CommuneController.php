@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\commune;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class CommuneController extends Controller
 {
@@ -37,7 +38,136 @@ class CommuneController extends Controller
     {
         //
     }
+        public function restToT($region, $typeRegisseur, $annee){
+            $values = ['0.5', 1, 2, 7, 5, 50];
+            $table_total_app = array_fill_keys($values, 0);
+            $table_total_ver = array_fill_keys($values, 0);
+            $table_total_tp = array_fill_keys($values, 0);
+            $reste=[];
+            $commune = commune::where('region', $region)->get();
+            foreach ($commune as $comu) {
+                $regisseurs = $comu->regisseurs()->get();
+                foreach ($regisseurs as $regi){
+                    $tableT[$regi->id] = DB::table('totals')
+                        ->where('regisseur_id', $regi->id)
+                        ->where('type', 'approvisionnement')
+                        ->where('annee', $annee)
+                        ->orderBy('id')
+                        ->get();
+                }
+            if ($typeRegisseur=='approvisionnement' || $typeRegisseur=='versement'){
+                //ligne total
+                foreach ($regisseurs as $regi){
 
+                    $tableA[$regi->id] = DB::table('totals')
+                        ->where('regisseur_id', $regi->id)
+                        ->where('type', 'versement')
+                        ->where('annee', $annee)
+                        ->orderBy('id')
+                        ->get();
+                //reste
+                foreach ($values as $value) {
+                    $column = "`" . $value . "`";
+                    $reste[$regi->id][$value] = DB::table('recaps')
+                        ->where('regisseur_id', $regi->id)
+                        ->where('annee', $annee)
+                        ->where('type', 'approvisionnement')
+                        ->sum(DB::raw($column));
+                }
+                }
+            }
+            elseif($typeRegisseur=='chez_tp'){
+                foreach ($regisseurs as $regi){
+                    $tableA[$comu->id] = DB::table('total_tps')
+                        ->where('commune_id', $comu->id)
+                        ->where('type', 'chez_tp')
+                        ->where('annee', $annee)
+                        ->orderBy('id')
+                        ->get();
+                    //reste
+                    foreach ($values as $value) {
+                        $column = "`" . $value . "`";
+                        $reste[$comu->id][$value] = DB::table('recap_tps')
+                            ->where('commune_id', $comu->id)
+                            ->where('annee', $annee)
+                            ->where('type', $typeRegisseur)
+                            ->sum(DB::raw($column));
+                    }
+                }
+            }
+            }
+            if ($typeRegisseur=='approvisionnement' || $typeRegisseur=='versement'){
+                //RESTE APP
+                foreach ($values as $value) {
+                    $total_sum = 0;
+                    foreach ($reste as $regi->id => $appro) {
+                        if (isset($appro[$value])) {
+
+                            $total_sum += $appro[$value];
+                        }
+                    }
+                    $reste['total'][$value] = $total_sum/$value;
+                }
+                //ligne APP
+                foreach ($tableT as $item) {
+                    foreach ($item as $value) {
+                        foreach ($values as $val) {
+                            $table_total_app[$val] += $value->$val;
+                        }
+                    }
+                }
+                //ligne tp
+                foreach ($tableA as $item) {
+                    foreach ($item as $value) {
+                        foreach ($values as $val) {
+                            $table_total_ver[$val] += $value->$val;
+                        }
+                    }
+                }
+            }
+            elseif ($typeRegisseur=='chez_tp'){
+                //RESTE APP
+                foreach ($values as $value) {
+                    $total_sum = 0;
+                    foreach ($reste as $comu->id => $appro) {
+                        if (isset($appro[$value])) {
+
+                            $total_sum += $appro[$value];
+                        }
+                    }
+                    $reste['total'][$value] = $total_sum/$value;
+                }
+                //ligne APP
+                foreach ($tableT as $item) {
+                    foreach ($item as $value) {
+                        foreach ($values as $val) {
+                            $table_total_app[$val] += $value->$val;
+                        }
+                    }
+                }
+                //ligne VER
+                foreach ($tableA as $item) {
+                    foreach ($item as $value) {
+                        foreach ($values as $val) {
+                            $table_total_tp[$val] += $value->$val;
+                        }
+                    }
+                }
+            }
+
+            //dd(array_sum($table_total_app),array_sum($table_total_tp),array_sum($reste['total']));
+            return view('TotalRecap.reste',
+                [
+                    'region' => $region,
+                    'annee' => $annee,
+                    'values' => $values,
+                    'typeRegisseur' => $typeRegisseur,
+                    'table_total_app' => $table_total_app,
+                    'table_total_ver' => $table_total_ver,
+                    'table_total_tp' => $table_total_tp,
+                    'reste' => $reste
+                ]);
+        }
     /**
      * Display the specified resource.
      */
@@ -48,13 +178,13 @@ class CommuneController extends Controller
 
         $commune =commune::find($id);
 
+
         if ($commune) {
             $regisseurs = $commune->regisseurs()->get();
 
         } else {
             dd('CU not found');
         }
-
 
 
         $typRegi=['approvisionnement','versement'];
