@@ -1,9 +1,12 @@
 <x-layout>
     <x-slot name="headings">
         <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-            <p class="text-xl font-bold text-gray-800 mb-4">Tableau de Commune Urbaine : {{$commune_Name}}</p>
+            <p class="text-xl font-bold text-gray-800 mb-4">Tableau de Commune {{ucfirst($region)}} : {{$commune_Name}}</p>
             <p class="text-lg text-gray-600 mb-4">L'année: {{$annee}}</p>
         </div>
+{{--
+        <x-button class="bg-blue-500 hover:bg-blue-700 text-black font-bold py-2 px-4 rounded" href="/chezTp/{{$annee}}/{{$commune_Name}}">Voir Recap</x-button>
+--}}
     </x-slot>
 
     <form method="POST" action="{{ url('/'.$typeRegisseur.'/'.$annee.'/'.($IDRegisseur??0).'/'.$commune_Name) }}">

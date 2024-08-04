@@ -29,8 +29,8 @@ Route::controller(RegisseurController::class)->group(function (){
 Route::controller(TotalController::class)->group(function (){
     Route::get('/commune','index');
     Route::post('/Total/{typeRegisseur}/{annee}/{IDRegisseur}/{commune_Name}', 'store');
-    Route::get('/Regisseur/{IDRegisseur}/{annee}', 'show');
-    Route::get('/Regisseur/chezTp/{IDRegisseur}/{annee}/{name}', 'resteTP');
+    Route::get('/Regisseur/{typeRegisseur}/{IDRegisseur}/{annee}', 'show');
+    Route::get('/chezTp/{annee}/{commune_Name}', 'resteTP');
     Route::post('/choix', 'display');
 });
 

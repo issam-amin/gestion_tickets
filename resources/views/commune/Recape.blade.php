@@ -43,6 +43,7 @@
                                     {{number_format( ( $sum->{$value} ?? 0 ) ?? 0, 2, ',', ' ')}}
                                 </td>
                             @endforeach
+
                         </tr>
                     @elseif($sum->type == 'versement')
                         @php

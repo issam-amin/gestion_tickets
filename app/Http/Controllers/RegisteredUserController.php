@@ -45,7 +45,7 @@ class RegisteredUserController extends Controller
         auth()->login($user);
 
         //redirect
-        return redirect('/names')->with('success', 'Your account has been created.');
+        return redirect('/')->with('success', 'Your account has been created.');
     }
 
     /**

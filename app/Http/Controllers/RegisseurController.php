@@ -237,7 +237,6 @@ class RegisseurController extends Controller
     public function store(Request $request, $typeRegisseur,$annee , $IDRegisseur, $nom)
     {
 
-
         $totalAnnuel= ['0.5' => 0, '1' => 0, '2' => 0,'7'=>0, '5' => 0, '50' => 0];
         $months = [
             'janvier', 'février', 'mars', 'avril', 'mai', 'juin',

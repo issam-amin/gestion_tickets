@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\APPROVISIONNEMENT;
 use App\Models\commune;
 use App\Models\regisseur;
 use App\Models\total;
@@ -400,7 +399,7 @@ elseif ($request->typeRegisseur == 'chez_tp') {
         /**
      * Display the specified resource.
      */
-    public function show( $id,  $annee)
+    public function show($typeRegisseur, $id,  $annee)
     {
         $regisseur=regisseur::find($id);
         $approv=['0.5'=>0, '1'=>0, '2'=>0, '5'=>0, '50'=>0];
@@ -422,48 +421,7 @@ elseif ($request->typeRegisseur == 'chez_tp') {
         ]);
     }
 
-    public function resteTP($id,$annee,$name)
-    {
-        $totalTP=DB::table('totals')
-            ->where('regisseur_id', $id)
-            ->where('annee', $annee)
-            ->where('type','chez_tp')
-            ->orderBy('id')
-            ->get();
 
-        $totalAPP=DB::table('totals')
-            ->where('regisseur_id', $id)
-            ->where('annee', $annee)
-            ->where('type','approvisionnement')
-            ->orderBy('id')
-            ->get();
-
-        $resteTP=['0.5'=>0, '1'=>0, '2'=>0, '5'=>0, '50'=>0];
-        $values = ['0.5', '1', '2', '5', '50'];
-        $sumTP=0;
-        $sumAPP=0;
-
-
-            foreach ($values as $value) {
-                $sumAPP += $totalAPP->first()->{$value} ?? 0;
-                $sumTP+= $totalTP->first()->{$value} ?? 0;
-                $resteTP[$value] += ($totalTP->first()->{$value} ?? 0)-($totalAPP->first()->{$value} ?? 0);
-            }
-
-
-        return view('commune.TpReste',[
-
-            'name'=>$name,
-            'annee'=>$annee,
-            'resteTP'=>$resteTP,
-            'sumTP'=>$sumTP,
-            'chezTp'=>$totalTP,
-            'sumREG'=>$sumAPP,
-             'chezREG'=>$totalAPP,
-            'values'=>$values,
-            ]
-        );
-    }
     /**
      * Show the form for editing the specified resource.
      */
@@ -486,5 +444,50 @@ elseif ($request->typeRegisseur == 'chez_tp') {
     public function destroy(string $id)
     {
         //
+    }
+    public function resteTP($annee,$commune_Name)
+    {
+
+        dd($annee,$commune_Name);
+
+        $totalTP=DB::table('totals')
+            ->where('regisseur_id', $id)
+            ->where('annee', $annee)
+            ->where('type','chez_tp')
+            ->orderBy('id')
+            ->get();
+
+        $totalAPP=DB::table('totals')
+            ->where('regisseur_id', $id)
+            ->where('annee', $annee)
+            ->where('type','approvisionnement')
+            ->orderBy('id')
+            ->get();
+
+        $resteTP=['0.5'=>0, '1'=>0, '2'=>0, '5'=>0, '50'=>0];
+        $values = ['0.5', '1', '2', '5', '50'];
+        $sumTP=0;
+        $sumAPP=0;
+
+
+        foreach ($values as $value) {
+            $sumAPP += $totalAPP->first()->{$value} ?? 0;
+            $sumTP+= $totalTP->first()->{$value} ?? 0;
+            $resteTP[$value] += ($totalTP->first()->{$value} ?? 0)-($totalAPP->first()->{$value} ?? 0);
+        }
+
+
+        return view('commune.TpReste',[
+
+                'name'=>$name,
+                'annee'=>$annee,
+                'resteTP'=>$resteTP,
+                'sumTP'=>$sumTP,
+                'chezTp'=>$totalTP,
+                'sumREG'=>$sumAPP,
+                'chezREG'=>$totalAPP,
+                'values'=>$values,
+            ]
+        );
     }
 }
