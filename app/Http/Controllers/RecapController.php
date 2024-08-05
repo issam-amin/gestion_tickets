@@ -33,7 +33,7 @@ class RecapController extends Controller
     public function store($typeRegisseur, $annee, $IDRegisseur, $nomcom)
     {
         $reste = ['0.5' => 0, '1' => 0, '2' => 0,'7' => 0 ,'5' => 0, '50' => 0];
-        $keysToFetch = ['0.5', 1, 2,7, 5, 50];
+        $keysToFetch = ['0.5', 1, 2, 7, 5, 50];
 
         if ($typeRegisseur == 'approvisionnement' || $typeRegisseur == 'versement') {
             $check = DB::table('recaps')
@@ -91,9 +91,9 @@ class RecapController extends Controller
                 foreach ($keysToFetch as $value) {
                     $column = $value;
 
-                    $totalAPP[$regi->id][$value] = DB::table('recaps')
+                    $totalAPP[$regi->id][$value] = DB::table('totals')
                         ->where('regisseur_id', $regi->id)
-                        ->where('annee', $annee-1 )
+                        ->where('annee', $annee )
                         ->where('type', 'approvisionnement')
                         ->sum(DB::raw("`$column`"));
 
@@ -109,7 +109,7 @@ class RecapController extends Controller
                 }
                 $totalAPP['total'][$value] = $total_sum;
             }
-            $values = ['0.5', '1', '5', '2', '50'];
+            $values = ['0.5', '1', '5', '7','2', '50'];
             foreach ($values as $value) {
                 $reste[$value] += ($totalTP->first()->{$value} ?? 0)-($totalAPP['total'][$value] ?? 0);
             }

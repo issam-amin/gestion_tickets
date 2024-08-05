@@ -38,7 +38,7 @@
                             <th scope="row" class="text-center">CHER_REG</th>
                             @foreach($values as $value)
                                 <td class="text-center py-4 border-b border-gray-300">
-                                    {{ $chezREG->first()->{$value}  ?? 0 }}
+                                    {{ $chezREG[$value]  ?? 0 }}
                                 </td>
                             @endforeach
                             <td class="text-center py-4 border-b border-gray-300">
@@ -51,11 +51,11 @@
                     <th scope="row" class="text-center">Reste</th>
                     @foreach($values as $value)
                         <td class="text-center py-4 border-b border-gray-300">
-                            {{ $resteTP[$value] ?? 0 }}
+                            {{ $resteTP->{$value} ?? 0 }}
                         </td>
                     @endforeach
                     <td class="text-center py-4 border-b border-gray-300">
-                        {{ array_sum($resteTP) ?? 0 }}
+                        {{ $sumrest ?? 0 }}
                     </td>
                 </tr>
 

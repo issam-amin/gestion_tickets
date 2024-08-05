@@ -4,7 +4,7 @@
 
 
         <div class="font-extrabold text-blue-500 ml-4 mb-4 sm:mb-0">  {{ucfirst($typeRegisseur)}} de L'année : {{$annee}}</div>
-        <x-button class="bg-blue-500 hover:bg-blue-700 text-black font-bold py-2 px-4 rounded" href="{{$region}}/{{$typeRegisseur}}/{{$annee}}">Voir Recap</x-button>
+        <x-button class="bg-blue-500 hover:bg-blue-700 text-black font-bold py-2 px-4 rounded" href="/total/{{$region}}/{{$typeRegisseur}}/{{$annee}}">Voir Recap</x-button>
     </x-slot>
 
     <form method="POST" action="#">

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CommuneController;
+use App\Http\Controllers\RecapTPController;
 use App\Http\Controllers\RegisseurController;
 use App\Http\Controllers\RegisteredUserController;
 use App\Http\Controllers\SessionController;
@@ -11,10 +12,10 @@ Route::get('/', function () {
 
     return view('home');
 });
-Route::controller(communeController::class)->group(function (){
+Route::controller(communeController::class)/*->middleware(['auth'])*/->group(function (){
         Route::get('/commune/{type}','index');
     Route::get('/commune/{region}/{id}', 'show');
-    Route::get('{region}/{typeRegisseur}/{annee}', 'restToT');
+    Route::get('/total/{region}/{typeRegisseur}/{annee}', 'restToT');
 });
 
 Route::controller(RegisseurController::class)->group(function (){
@@ -30,9 +31,19 @@ Route::controller(TotalController::class)->group(function (){
     Route::get('/commune','index');
     Route::post('/Total/{typeRegisseur}/{annee}/{IDRegisseur}/{commune_Name}', 'store');
     Route::get('/Regisseur/{typeRegisseur}/{IDRegisseur}/{annee}', 'show');
-    Route::get('/chezTp/{annee}/{commune_Name}', 'resteTP');
     Route::post('/choix', 'display');
 });
+
+/*Route::get('/chezTp/{annee}/{commune_Name}', [RecapTPController::class, 'resteTP']);*/
+
+Route::controller(RecapTPController::class)->group(function (){
+    Route::get('/chezTp/{annee}/{commune_Name}', 'resteTP');
+
+});
+
+
+
+
 
 Route::view('/Trecap','/TotalRecap/Trecap');
 //Authentification

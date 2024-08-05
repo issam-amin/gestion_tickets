@@ -65,11 +65,11 @@
                 <th scope="row" class="text-center">Reste</th>
                 @foreach($values as $value)
                     <td class="text-center py-4 border-b border-gray-300">
-                        {{  number_format($reste['total'][$value] ?? 0  , 2, ',', ' ') }}
+                        {{  number_format($reste[$value] ?? 0  , 2, ',', ' ') }}
                     </td>
                 @endforeach
                 <td class="text-center py-4 border-b border-gray-300">
-                    {{  number_format(array_sum($reste['total']) ?? 0  , 2, ',', ' ')}}
+                    {{  number_format(array_sum($reste) ?? 0  , 2, ',', ' ')}}
                 </td>
             </tr>
 

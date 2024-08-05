@@ -269,7 +269,8 @@ class RegisseurController extends Controller
                     ->orderBy('id')
                     ->get();
 
-            } else {
+            }
+            else {
                 $check = DB::table($table)
                     ->where('regisseur_id', $IDRegisseur)
                     ->where('annee', $annee)
@@ -355,6 +356,8 @@ class RegisseurController extends Controller
                 }
             }
         }
+
+
 
         $totalController = new TotalController();
         $totalController->store($totalAnnuel, $typeRegisseur, $annee, $IDRegisseur,$nom);

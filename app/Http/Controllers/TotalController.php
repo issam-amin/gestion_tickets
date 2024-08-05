@@ -404,7 +404,7 @@ elseif ($request->typeRegisseur == 'chez_tp') {
         $regisseur=regisseur::find($id);
         $approv=['0.5'=>0, '1'=>0, '2'=>0, '5'=>0, '50'=>0];
         $versement=['0.5'=>0, '1'=>0, '2'=>0, '5'=>0, '50'=>0];
-        $values = ['0.5', '1', '5', '2', '50'];
+        $values = ['0.5', '1', '5', '7','2', '50'];
         $QUE = DB::table('totals')
             ->where('regisseur_id', $id)
             ->where('annee', $annee)
@@ -445,49 +445,5 @@ elseif ($request->typeRegisseur == 'chez_tp') {
     {
         //
     }
-    public function resteTP($annee,$commune_Name)
-    {
 
-        dd($annee,$commune_Name);
-
-        $totalTP=DB::table('totals')
-            ->where('regisseur_id', $id)
-            ->where('annee', $annee)
-            ->where('type','chez_tp')
-            ->orderBy('id')
-            ->get();
-
-        $totalAPP=DB::table('totals')
-            ->where('regisseur_id', $id)
-            ->where('annee', $annee)
-            ->where('type','approvisionnement')
-            ->orderBy('id')
-            ->get();
-
-        $resteTP=['0.5'=>0, '1'=>0, '2'=>0, '5'=>0, '50'=>0];
-        $values = ['0.5', '1', '2', '5', '50'];
-        $sumTP=0;
-        $sumAPP=0;
-
-
-        foreach ($values as $value) {
-            $sumAPP += $totalAPP->first()->{$value} ?? 0;
-            $sumTP+= $totalTP->first()->{$value} ?? 0;
-            $resteTP[$value] += ($totalTP->first()->{$value} ?? 0)-($totalAPP->first()->{$value} ?? 0);
-        }
-
-
-        return view('commune.TpReste',[
-
-                'name'=>$name,
-                'annee'=>$annee,
-                'resteTP'=>$resteTP,
-                'sumTP'=>$sumTP,
-                'chezTp'=>$totalTP,
-                'sumREG'=>$sumAPP,
-                'chezREG'=>$totalAPP,
-                'values'=>$values,
-            ]
-        );
-    }
 }

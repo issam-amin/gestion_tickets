@@ -43,7 +43,7 @@ class CommuneController extends Controller
             $table_total_app = array_fill_keys($values, 0);
             $table_total_ver = array_fill_keys($values, 0);
             $table_total_tp = array_fill_keys($values, 0);
-            $reste=[];
+            $reste=array_fill_keys($values, 0);
             $commune = commune::where('region', $region)->get();
             foreach ($commune as $comu) {
                 $regisseurs = $comu->regisseurs()->get();
@@ -52,29 +52,34 @@ class CommuneController extends Controller
                         ->where('regisseur_id', $regi->id)
                         ->where('type', 'approvisionnement')
                         ->where('annee', $annee)
-                        ->orderBy('id')
                         ->get();
                 }
-            if ($typeRegisseur=='approvisionnement' || $typeRegisseur=='versement'){
-                //ligne total
-                foreach ($regisseurs as $regi){
+                if ($typeRegisseur=='approvisionnement' || $typeRegisseur=='versement'){
 
-                    $tableA[$regi->id] = DB::table('totals')
-                        ->where('regisseur_id', $regi->id)
-                        ->where('type', 'versement')
-                        ->where('annee', $annee)
-                        ->orderBy('id')
-                        ->get();
-                //reste
-                foreach ($values as $value) {
-                    $column = "`" . $value . "`";
-                    $reste[$regi->id][$value] = DB::table('recaps')
-                        ->where('regisseur_id', $regi->id)
-                        ->where('annee', $annee)
-                        ->where('type', 'approvisionnement')
-                        ->sum(DB::raw($column));
-                }
-                }
+                    //ligne total
+                    foreach ($regisseurs as $regi) {
+
+                        $tableA[$regi->id] = DB::table('totals')
+                            ->where('regisseur_id', $regi->id)
+                            ->where('type', 'versement')
+                            ->where('annee', $annee)
+                            ->get();
+                        //reste
+                       // $reste[$regi->id]
+
+                           $recap = DB::table('recaps')
+                                ->where('regisseur_id', $regi->id)
+                                ->where('annee', $annee)
+                                ->where('type', 'approvisionnement')
+                                ->get();
+                           if(!empty($recap)){
+                               $reste=['0.5'=>$reste['0.5']+$recap[0]->{'0.5'},1=>$reste[1]+$recap[0]->{1},2=>$reste[2]+$recap[0]->{2},
+                                   7=>$reste[7]+$recap[0]->{7},5=>$reste[5]+$recap[0]->{5},50=>$reste[50]+$recap[0]->{50}];
+
+                           }
+
+                    }
+
             }
             elseif($typeRegisseur=='chez_tp'){
                 foreach ($regisseurs as $regi){
@@ -84,30 +89,27 @@ class CommuneController extends Controller
                         ->where('annee', $annee)
                         ->orderBy('id')
                         ->get();
-                    //reste
-                    foreach ($values as $value) {
-                        $column = "`" . $value . "`";
-                        $reste[$comu->id][$value] = DB::table('recap_tps')
-                            ->where('commune_id', $comu->id)
-                            ->where('annee', $annee)
-                            ->where('type', $typeRegisseur)
-                            ->sum(DB::raw($column));
-                    }
                 }
+                    //reste
+
+
+
+                    $recap = DB::table('recap_tps')
+                        ->where('commune_id', $comu->id)
+                        ->where('annee', $annee)
+                        ->where('type', $typeRegisseur)
+                        ->get();
+                    if(!empty($recap)){
+                        $reste=['0.5'=>$reste['0.5']+$recap[0]->{'0.5'},1=>$reste[1]+$recap[0]->{1},2=>$reste[2]+$recap[0]->{2},
+                            7=>$reste[7]+$recap[0]->{7},5=>$reste[5]+$recap[0]->{5},50=>$reste[50]+$recap[0]->{50}];
+
+                    }
+
+
             }
             }
             if ($typeRegisseur=='approvisionnement' || $typeRegisseur=='versement'){
-                //RESTE APP
-                foreach ($values as $value) {
-                    $total_sum = 0;
-                    foreach ($reste as $regi->id => $appro) {
-                        if (isset($appro[$value])) {
 
-                            $total_sum += $appro[$value];
-                        }
-                    }
-                    $reste['total'][$value] = $total_sum/$value;
-                }
                 //ligne APP
                 foreach ($tableT as $item) {
                     foreach ($item as $value) {
@@ -127,7 +129,7 @@ class CommuneController extends Controller
             }
             elseif ($typeRegisseur=='chez_tp'){
                 //RESTE APP
-                foreach ($values as $value) {
+               /* foreach ($values as $value) {
                     $total_sum = 0;
                     foreach ($reste as $comu->id => $appro) {
                         if (isset($appro[$value])) {
@@ -136,7 +138,7 @@ class CommuneController extends Controller
                         }
                     }
                     $reste['total'][$value] = $total_sum/$value;
-                }
+                }*/
                 //ligne APP
                 foreach ($tableT as $item) {
                     foreach ($item as $value) {
@@ -154,7 +156,6 @@ class CommuneController extends Controller
                     }
                 }
             }
-
             //dd(array_sum($table_total_app),array_sum($table_total_tp),array_sum($reste['total']));
             return view('TotalRecap.reste',
                 [
